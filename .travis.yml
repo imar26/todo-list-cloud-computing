@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 sudo: false
 install: true
@@ -11,4 +11,7 @@ script:
 notifications:
   email:
     recipients:
-      - t.parikh@northeastern.edu
+      - chandiwal.s@husky.neu.edu
+      - randeria.a@husky.neu.edu
+      - khatri.bh@husky.neu.edu
+      - prabhune.y@husky.neu.edu
