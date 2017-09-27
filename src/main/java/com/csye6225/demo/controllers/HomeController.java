@@ -30,7 +30,6 @@ public class HomeController {
     } else {
       jsonObject.addProperty("message", "you are logged in. current time is " + new Date().toString());
     }
-
     return jsonObject.toString();
   }
 
