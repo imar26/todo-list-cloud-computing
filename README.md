@@ -3,8 +3,11 @@
 # Team Members
 
 Aadesh Randeria     001224139   randeria.a@husky.neu.edu
+
 Bhumika Khatri      001284560   prabhune.y@husky.neu.edu
+
 Siddhant Chandiwal  001286480   chandiwal.s@husky.neu.edu
+
 Yashodhan Prabhune  001220710   prabhune.y@husky.neu.edu
 
 # Make Unauthenticated HTTP Request
