@@ -1,10 +1,5 @@
 # csye6225-fall2017
 
-Initial Change
-
-Second Change updated
-
-Third Change
 # Team Members
 
 Aadesh Randeria     001224139   randeria.a@husky.neu.edu
