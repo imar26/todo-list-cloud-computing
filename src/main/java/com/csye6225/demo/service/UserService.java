@@ -1,6 +1,6 @@
 package com.csye6225.demo.service;
 
-import com.csye6225.demo.Repositories.UserRepository;
+import com.csye6225.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.csye6225.demo.pojo.User;

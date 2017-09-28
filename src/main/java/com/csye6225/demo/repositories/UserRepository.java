@@ -1,4 +1,4 @@
-package com.csye6225.demo.Repositories;
+package com.csye6225.demo.repositories;
 
 import com.csye6225.demo.pojo.User;
 import org.springframework.data.repository.CrudRepository;
