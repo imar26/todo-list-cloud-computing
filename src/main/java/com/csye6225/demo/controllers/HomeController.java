@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Date;
@@ -43,16 +40,38 @@ public class HomeController {
 
   @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
-  public String welcome() {
+  public String welcome(HttpServletRequest request) {
 
     JsonObject jsonObject = new JsonObject();
 
-    if (SecurityContextHolder.getContext().getAuthentication() != null
+    final String auth = request.getHeader("Authorization");
+    if (auth != null && auth.startsWith("Basic")) {
+      String base64Credentials = auth.substring("Basic".length()).trim();
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+              Charset.forName("UTF-8"));
+
+      final String[] values = credentials.split(":", 2);
+
+      String userName = values[0];
+      String password = values[1];
+
+      password = bCryptPasswordEncoder.encode(password);
+
+      User match = userService.findByUserNameAndPassword(userName, password);
+
+      if(match==null){
+        jsonObject.addProperty("message", "you are logged in. current time is " + new Date().toString());
+      }else{
+        jsonObject.addProperty("message", "you are not logged in!!!");
+      }
+    }
+
+   /* if (SecurityContextHolder.getContext().getAuthentication() != null
         && SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken) {
       jsonObject.addProperty("message", "you are not logged in!!!");
     } else {
       jsonObject.addProperty("message", "you are logged in. current time is " + new Date().toString());
-    }
+    }*/
     return jsonObject.toString();
   }
 
@@ -63,7 +82,6 @@ public class HomeController {
     JsonObject json = new JsonObject();
 
     final String auth = request.getHeader("Authorization");
-    HttpSession session = request.getSession();
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
       String credentials = new String(Base64.getDecoder().decode(base64Credentials),
