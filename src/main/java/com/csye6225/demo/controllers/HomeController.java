@@ -62,9 +62,6 @@ public class HomeController {
   public String save(HttpServletRequest request) {
     JsonObject json = new JsonObject();
 
-
-
-    System.out.println("Inside Register Method");
     final String auth = request.getHeader("Authorization");
     HttpSession session = request.getSession();
     if (auth != null && auth.startsWith("Basic")) {
@@ -74,11 +71,6 @@ public class HomeController {
 
       final String[] values = credentials.split(":", 2);
 
-      System.out.println("User is : " + values[0]);
-      System.out.println(" Password is : " + values[1]);
-
-      System.out.println("Adding email address");
-
       String userName = values[0];
       String password = values[1];
 
@@ -86,19 +78,18 @@ public class HomeController {
 
       try {
         User userExists = userService.findByUserName(userName);
-        System.out.println("User Exixts in the DB " +userExists);
 
         if(userExists==null){
           User user = new User();
           user.setUserName(userName);
           user.setPassword(password);
           userRepository.save(user);
-          json.addProperty("message", "User Added Successfully");
+          json.addProperty("message", "User added successfully");
         }else{
-          json.addProperty("message", "User Already Exists in DB");
+          json.addProperty("message", "User account already exists");
         }
       }catch(DataIntegrityViolationException e){
-        json.addProperty("message", "User Already Exists in DB");
+        json.addProperty("message", "User account already exists");
       }
     }
     return json.toString();
