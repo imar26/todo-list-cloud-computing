@@ -1,9 +1,14 @@
 package com.csye6225.demo.controllers;
 
 
+import com.csye6225.demo.Repositories.UserRepository;
+import com.csye6225.demo.pojo.User;
+import com.csye6225.demo.service.UserService;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -11,10 +16,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Date;
 
 @Controller
 public class HomeController {
+
+  @Autowired
+  private UserRepository userRepository;
+
+  private UserService userService;
+
+  @Autowired
+  public HomeController(UserService userService) {
+    this.userService = userService;
+  }
 
   private final static Logger logger = LoggerFactory.getLogger(HomeController.class);
 
@@ -32,6 +51,50 @@ public class HomeController {
     }
     return jsonObject.toString();
   }
+
+
+  @RequestMapping(value = "/user/register", method = RequestMethod.POST, produces = "application/json")
+  @ResponseBody
+  public String save(HttpServletRequest request) {
+    JsonObject json = new JsonObject();
+
+
+
+    System.out.println("Inside Register Method");
+    String auth = request.getHeader("Authorization");
+    HttpSession session = request.getSession();
+    if (auth != null && auth.startsWith("Basic")) {
+      String base64Credentials = auth.substring("Basic".length()).trim();
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+              Charset.forName("UTF-8"));
+
+      final String[] values = credentials.split(":", 2);
+
+      System.out.println("User is : " + values[0]);
+      System.out.println(" Password is : " + values[1]);
+
+      System.out.println("Adding email address");
+
+      try {
+        User userExists = userService.findByUserName(values[0]);
+        System.out.println("User Exixts in the DB " +userExists);
+
+        if(userExists==null){
+          String userName = values[0];
+          User user = new User();
+          user.setUserName(userName);
+          userRepository.save(user);
+          json.addProperty("message", "User Added Successfully");
+        }else{
+          json.addProperty("message", "User Already Exists in DB");
+        }
+      }catch(DataIntegrityViolationException e){
+        json.addProperty("message", "User Already Exists in DB");
+      }
+    }
+    return json.toString();
+  }
+
 
   @RequestMapping(value = "/test", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
