@@ -1,0 +1,17 @@
+language: java
+jdk:
+  - openjdk8
+
+sudo: false
+install: true
+
+script:
+  - ./gradlew war
+
+notifications:
+  email:
+    recipients:
+      - chandiwal.s@husky.neu.edu
+      - randeria.a@husky.neu.edu
+      - khatri.bh@husky.neu.edu
+      - prabhune.y@husky.neu.edu
