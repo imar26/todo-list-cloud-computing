@@ -1,8 +1,8 @@
 package com.csye6225.demo.controllers;
 
 
-import com.csye6225.demo.Repositories.UserRepository;
 import com.csye6225.demo.pojo.User;
+import com.csye6225.demo.repositories.UserRepository;
 import com.csye6225.demo.service.UserService;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +28,9 @@ public class HomeController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private BCryptPasswordEncoder bCryptPasswordEncoder;
 
   private UserService userService;
 
@@ -61,7 +65,7 @@ public class HomeController {
 
 
     System.out.println("Inside Register Method");
-    String auth = request.getHeader("Authorization");
+    final String auth = request.getHeader("Authorization");
     HttpSession session = request.getSession();
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
@@ -75,14 +79,19 @@ public class HomeController {
 
       System.out.println("Adding email address");
 
+      String userName = values[0];
+      String password = values[1];
+
+      password = bCryptPasswordEncoder.encode(password);
+
       try {
-        User userExists = userService.findByUserName(values[0]);
+        User userExists = userService.findByUserName(userName);
         System.out.println("User Exixts in the DB " +userExists);
 
         if(userExists==null){
-          String userName = values[0];
           User user = new User();
           user.setUserName(userName);
+          user.setPassword(password);
           userRepository.save(user);
           json.addProperty("message", "User Added Successfully");
         }else{
