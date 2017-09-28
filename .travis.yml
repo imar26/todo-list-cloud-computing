@@ -10,8 +10,7 @@ script:
 
 notifications:
   email:
-    recipients:
-      - chandiwal.s@husky.neu.edu
-      - randeria.a@husky.neu.edu
-      - khatri.bh@husky.neu.edu
-      - prabhune.y@husky.neu.edu
+    - chandiwal.s@husky.neu.edu
+    - randeria.a@husky.neu.edu
+    - khatri.bh@husky.neu.edu
+    - prabhune.y@husky.neu.edu
