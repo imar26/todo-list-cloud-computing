@@ -64,6 +64,8 @@ public class HomeController {
           }
         }
       }
+    }else {
+      jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
   }
