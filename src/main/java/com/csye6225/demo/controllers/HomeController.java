@@ -1,6 +1,4 @@
 package com.csye6225.demo.controllers;
-
-
 import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.UserRepository;
 import com.csye6225.demo.service.UserService;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -41,79 +38,66 @@ public class HomeController {
   @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public String welcome(HttpServletRequest request) {
-
     JsonObject jsonObject = new JsonObject();
-
     final String auth = request.getHeader("Authorization");
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
-      String credentials = new String(Base64.getDecoder().decode(base64Credentials),
-              Charset.forName("UTF-8"));
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
 
       final String[] values = credentials.split(":", 2);
-
       String userName = values[0];
       String password = values[1];
 
-      password = bCryptPasswordEncoder.encode(password);
-
-      User match = userService.findByUserNameAndPassword(userName, password);
-
-      if(match==null){
-        jsonObject.addProperty("message", "you are logged in. current time is " + new Date().toString());
-      }else{
-        jsonObject.addProperty("message", "you are not logged in!!!");
+      if(userName.isEmpty() || password.isEmpty()){
+        jsonObject.addProperty("message", "Please Enter Credentials");
+      }
+      else{
+        User user = userService.findByUserName(userName);
+        if (user == null) {
+          jsonObject.addProperty("message", "Please Enter Valid User Name");
+        } else {
+          String pass = user.getPassword();
+          if (bCryptPasswordEncoder.matches(password, pass)) {
+            jsonObject.addProperty("message", "You are Logged In. Current Time is : " + new Date().toString());
+          } else {
+            jsonObject.addProperty("message", "Wrong Credentials!!!");
+          }
+        }
       }
     }
-
-   /* if (SecurityContextHolder.getContext().getAuthentication() != null
-        && SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken) {
-      jsonObject.addProperty("message", "you are not logged in!!!");
-    } else {
-      jsonObject.addProperty("message", "you are logged in. current time is " + new Date().toString());
-    }*/
     return jsonObject.toString();
   }
-
 
   @RequestMapping(value = "/user/register", method = RequestMethod.POST, produces = "application/json")
   @ResponseBody
   public String save(HttpServletRequest request) {
     JsonObject json = new JsonObject();
-
     final String auth = request.getHeader("Authorization");
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
-      String credentials = new String(Base64.getDecoder().decode(base64Credentials),
-              Charset.forName("UTF-8"));
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
 
       final String[] values = credentials.split(":", 2);
-
       String userName = values[0];
       String password = values[1];
-
       password = bCryptPasswordEncoder.encode(password);
-
       try {
         User userExists = userService.findByUserName(userName);
-
         if(userExists==null){
           User user = new User();
           user.setUserName(userName);
           user.setPassword(password);
           userRepository.save(user);
-          json.addProperty("message", "User added successfully");
+          json.addProperty("message", "User Added Successfully");
         }else{
-          json.addProperty("message", "User account already exists");
+          json.addProperty("message", "User Account Already Exists!!!");
         }
       }catch(DataIntegrityViolationException e){
-        json.addProperty("message", "User account already exists");
+        json.addProperty("message", "User Account Already Exists!!!");
       }
     }
     return json.toString();
   }
-
-
   @RequestMapping(value = "/test", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public String test() {
@@ -121,7 +105,6 @@ public class HomeController {
     jsonObject.addProperty("message", "authorized for /test");
     return jsonObject.toString();
   }
-
   @RequestMapping(value = "/testPost", method = RequestMethod.POST, produces = "application/json")
   @ResponseBody
   public String testPost() {
@@ -129,5 +112,4 @@ public class HomeController {
     jsonObject.addProperty("message", "authorized for /testPost");
     return jsonObject.toString();
   }
-
 }
