@@ -1,3 +1,10 @@
+/*
+Yashodhan Prabhune,001220710,prabhune.y@husky.neu.edu
+Bhumika Khatri,001284560,khatri.bh@husky.neu.edu
+Aadesh Randeria,001224139,randeria.a@husky.neu.edu
+Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
+ */
+
 package com.csye6225.demo.controllers;
 import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.UserRepository;
@@ -78,10 +85,12 @@ public class HomeController {
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
       String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
-
+      System.out.println("friday check"+auth);
       final String[] values = credentials.split(":", 2);
+
       String userName = values[0];
       String password = values[1];
+
       password = bCryptPasswordEncoder.encode(password);
       try {
         User userExists = userService.findByUserName(userName);
