@@ -85,27 +85,35 @@ public class HomeController {
     if (auth != null && auth.startsWith("Basic")) {
       String base64Credentials = auth.substring("Basic".length()).trim();
       String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
-      System.out.println("friday check"+auth);
+
       final String[] values = credentials.split(":", 2);
 
       String userName = values[0];
       String password = values[1];
 
-      password = bCryptPasswordEncoder.encode(password);
-      try {
-        User userExists = userService.findByUserName(userName);
-        if(userExists==null){
-          User user = new User();
-          user.setUserName(userName);
-          user.setPassword(password);
-          userRepository.save(user);
-          json.addProperty("message", "User Added Successfully");
-        }else{
+      if (userName.isEmpty()) {
+        json.addProperty("message", "Please enter username/password");
+      } else if (password.isEmpty()) {
+        json.addProperty("message", "Please enter username/password");
+      } else {
+        password = bCryptPasswordEncoder.encode(password);
+        try {
+          User userExists = userService.findByUserName(userName);
+          if (userExists == null) {
+            User user = new User();
+            user.setUserName(userName);
+            user.setPassword(password);
+            userRepository.save(user);
+            json.addProperty("message", "User Added Successfully");
+          } else {
+            json.addProperty("message", "User Account Already Exists!!!");
+          }
+        } catch (DataIntegrityViolationException e) {
           json.addProperty("message", "User Account Already Exists!!!");
         }
-      }catch(DataIntegrityViolationException e){
-        json.addProperty("message", "User Account Already Exists!!!");
       }
+    } else {
+      json.addProperty("message", "Please enter username/password");
     }
     return json.toString();
   }
