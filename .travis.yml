@@ -1,0 +1,27 @@
+
+#Yashodhan Prabhune,001220710,prabhune.y@husky.neu.edu
+#Bhumika Khatri,001284560,khatri.bh@husky.neu.edu
+#Aadesh Randeria,001224139,randeria.a@husky.neu.edu
+#Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
+
+
+language: java
+jdk:
+  - openjdk8
+
+sudo: false
+install: true
+
+script:
+  - ./gradlew war
+  - ./gradlew test
+
+notifications:
+  email:
+    recipients:
+      - chandiwal.s@husky.neu.edu
+      - randeria.a@husky.neu.edu
+      - prabhune.y@husky.neu.edu
+      - khatri.bh@husky.neu.edu
+    on_success: always
+    on_failure: always
