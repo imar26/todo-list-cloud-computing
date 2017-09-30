@@ -1,4 +1,5 @@
-# csye6225-fall2017
+# CSYE 6225 - FALL 2017
+
 
 # Team Members
 
