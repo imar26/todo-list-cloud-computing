@@ -10,6 +10,7 @@ Siddhant Chandiwal  001286480   chandiwal.s@husky.neu.edu
 
 Yashodhan Prabhune  001220710   prabhune.y@husky.neu.edu
 
+
 # Make Unauthenticated HTTP Request
 
 Execute following command on your bash shell
