@@ -7,7 +7,6 @@ install: true
 
 script:
   - ./gradlew war
-  - ./gradlew test
 
 notifications:
   email:
