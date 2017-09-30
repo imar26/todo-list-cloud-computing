@@ -16,3 +16,6 @@ notifications:
       - randeria.a@husky.neu.edu
       - prabhune.y@husky.neu.edu
       - khatri.bh@husky.neu.edu
+    on_success: always
+    on_failure: always
+    
