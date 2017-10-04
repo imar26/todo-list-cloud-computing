@@ -43,8 +43,68 @@ echo "security group configured"
 #Launch EC2 Instance
 echo "Launching EC2 Instance"
 
-aws ec2 run-instances --image-id ami-cd0f5cb6 --count 1 --instance-type t2.micro --key-name csye6225-aws --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET_ID
+INSTANCE_ID=$(aws ec2 run-instances --image-id ami-cd0f5cb6 --count 1 --instance-type t2.micro --key-name csye6225-aws --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET_ID --disable-api-termination --block-device-mappings "[ { \"DeviceName\": \"/dev/sda1\", \"Ebs\": { \"VolumeSize\": 32, \"VolumeType\": \"gp2\" } } ]" --query "Instances[0].InstanceId" --output text)
+echo $INSTANCE_ID
 
 echo "EC2 Instance created"
 
+#Wait for instance to be in running state
 
+echo "Wait for instance to be in running state"
+
+aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+
+echo "Instance is in running state"
+
+#Retrieving instance’s public IP address
+
+echo "Retrieving instance’s public IP address"
+
+IP_ADDRESS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[*].Instances[*].[PublicIpAddress]" --output text)
+echo $IP_ADDRESS
+
+echo "Retrieved IP Address"
+
+#Get hosted zone id
+
+echo "Get hosted zone id"
+
+HOSTED_ZONE_ID=$(aws route53 list-hosted-zones --query HostedZones[0].Id --output text)
+ZONE_ID=${HOSTED_ZONE_ID:12}
+echo $ZONE_ID
+
+echo "Got the domain name"
+
+#Get Domain Name
+
+echo "Getting the domain name"
+
+DOMAIN_NAME=$(aws route53 list-hosted-zones --query HostedZones[0].Name --output text)
+echo $DOMAIN_NAME
+
+echo "Got the domain name"
+
+#Add/Update type A resource record set
+
+echo "Add/Update type A resource record set"
+
+aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch "{
+  \"Comment\": \"Upsert record set\",
+  \"Changes\": [
+    {
+      \"Action\": \"UPSERT\",
+      \"ResourceRecordSet\": {
+        \"Name\": \"ec2.$DOMAIN_NAME\",
+        \"Type\": \"A\",
+        \"TTL\": 60,
+        \"ResourceRecords\": [
+          {
+            \"Value\": \"$IP_ADDRESS\"
+          }
+        ]
+      }
+    }
+  ]
+}"
+
+echo "Done setting A record set"
