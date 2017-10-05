@@ -43,7 +43,7 @@ echo "security group configured"
 #Launch EC2 Instance
 echo "Launching EC2 Instance"
 
-INSTANCE_ID=$(aws ec2 run-instances --image-id ami-cd0f5cb6 --count 1 --instance-type t2.micro --key-name csye6225-aws --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET_ID --disable-api-termination --block-device-mappings "[ { \"DeviceName\": \"/dev/sda1\", \"Ebs\": { \"VolumeSize\": 32, \"VolumeType\": \"gp2\" } } ]" --query "Instances[0].InstanceId" --output text)
+INSTANCE_ID=$(aws ec2 run-instances --image-id ami-cd0f5cb6 --count 1 --instance-type t2.micro --key-name csye6225-aws --security-group-ids $SECURITY_GROUP --subnet-id $SUBNET_ID --disable-api-termination --block-device-mappings "[ { \"DeviceName\": \"/dev/sda1\", \"Ebs\": { \"VolumeSize\": 16, \"VolumeType\": \"gp2\" } } ]" --query "Instances[0].InstanceId" --output text)
 echo $INSTANCE_ID
 
 echo "EC2 Instance created"
