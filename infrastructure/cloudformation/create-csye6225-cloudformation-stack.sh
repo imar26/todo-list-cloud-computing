@@ -73,7 +73,7 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
       \"Type\": \"AWS::EC2::SecurityGroup\",
       \"Properties\": {
         \"GroupName\":\"csye6225-fall2017-$STACK_NAME-webapp\",
-        \"GroupDescription\": \"Enable HTTP access via port 80, SSH access via port 22\",
+        \"GroupDescription\": \"Enable HTTP access via port 80, SSH access via port 22, HTTPS access via port 443\",
         \"VpcId\": \"$VPC_ID\",
         \"SecurityGroupIngress\": [
           {
