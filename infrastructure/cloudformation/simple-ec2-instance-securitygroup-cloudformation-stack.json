@@ -16,7 +16,15 @@
           }
         ],
         "KeyName": "csye6225-aws",
-        "SubnetId": "subnet-8ef300c5"
+  "SubnetId" : [
+    {
+      "ParameterKey": "SubnetId",
+      "ParameterValue":"$SUBNET_ID"
+    }
+  ]
+
+
+
       }
     },
     "WebServerSecurityGroup": {
