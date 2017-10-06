@@ -17,6 +17,25 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_
 
 echo $SUBNET_ID
 
+#Get hosted zone id
+
+echo "Get hosted zone id"
+
+HOSTED_ZONE_ID=$(aws route53 list-hosted-zones --query HostedZones[0].Id --output text)
+ZONE_ID=${HOSTED_ZONE_ID:12}
+echo $ZONE_ID
+
+echo "Got the domain name"
+
+#Get Domain Name
+
+echo "Getting the domain name"
+
+DOMAIN_NAME=$(aws route53 list-hosted-zones --query HostedZones[0].Name --output text)
+echo $DOMAIN_NAME
+
+echo "Got the domain name"
+
 
 aws cloudformation create-stack --stack-name $1 --template-body "{
 \"AWSTemplateFormatVersion\": \"2010-09-09\",
@@ -68,9 +87,34 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
             \"FromPort\": \"22\",
             \"ToPort\": \"22\",
             \"CidrIp\": \"0.0.0.0/0\"
+          },
+          {
+            \"IpProtocol\": \"tcp\",
+            \"FromPort\": \"443\",
+            \"ToPort\": \"443\",
+             \"CidrIp\": \"0.0.0.0/0\"
           }
         ]
       }
+    },
+    \"MyDNSRecord\": {
+    \"Type\":\"AWS::Route53::RecordSet\",
+    \"Properties\" : {
+    \"Comment\" : \"DNS name for my instance.\",
+    \"Name\" : \"ec2.$DOMAIN_NAME\",
+    \"HostedZoneId\" : \"$ZONE_ID\",
+    \"Type\" : \"A\",
+    \"TTL\" : \"60\",
+    \"ResourceRecords\" :
+        [
+            {
+             \"Fn::GetAtt\" :
+                [
+                \"EC2Instance\", \"PublicIp\"
+                 ]
+             }
+        ]
+       }
     }
   }
 }"
