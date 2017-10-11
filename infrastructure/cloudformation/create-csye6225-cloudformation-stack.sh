@@ -46,6 +46,12 @@ echo $DOMAIN_NAME
 
 echo "Got the domain name"
 
+BUCKET_NAME=$DOMAIN_NAME
+BUCKET_NAME+="csye6225.com"
+
+echo "Bucket Name "
+
+echo $BUCKET_NAME
 
 aws cloudformation create-stack --stack-name $1 --template-body "{
 \"AWSTemplateFormatVersion\": \"2010-09-09\",
@@ -133,7 +139,7 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
               \"IpProtocol\": \"tcp\",
               \"FromPort\": \"3306\",
               \"ToPort\": \"3306\",
-              \"SourceSecurityGroupId\" : 
+              \"SourceSecurityGroupId\" :
                 {
                   \"Fn::GetAtt\": [
                     \"WebServerSecurityGroup\",
@@ -152,6 +158,35 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
         \"DBSubnetGroupDescription\": \"My Subnet Group\",
         \"SubnetIds\": [\"$SUBNET_ID\", \"$SUBNET_ID_1\"]
       }
+    },
+    \"myDynamoDBTable\" : {
+    \"Type\" :\"AWS::DynamoDB::Table\",
+    \"Properties\" : {
+    \"AttributeDefinitions\" : [
+        {
+    	    \"AttributeName\" : \"id\",
+    	    \"AttributeType\" : \"S\"
+    	}],
+    \"KeySchema\" : [
+       	 {
+   		     \"AttributeName\" : \"id\",
+   		     \"KeyType\" : \"HASH\"
+    	 }],
+    \"ProvisionedThroughput\" :
+         {
+            \"ReadCapacityUnits\" : \"5\",
+    	    \"WriteCapacityUnits\" : \"5\"
+         },
+    \"TableName\" : \"csye6225\"
+
+    	 }
+    },
+    \"myBucket\": {
+    	\"Type\": \"AWS::S3::Bucket\",
+        \"Properties\": {
+    		\"BucketName\" : \"$BUCKET_NAME\"
+
+    	}
     },
     \"MyDNSRecord\": {
     \"Type\":\"AWS::Route53::RecordSet\",
