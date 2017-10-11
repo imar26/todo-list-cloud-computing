@@ -23,6 +23,10 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_
 
 echo $SUBNET_ID
 
+export SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[1].SubnetId" --output text)
+
+echo $SUBNET_ID_1
+
 #Get hosted zone id
 
 echo "Get hosted zone id"
@@ -78,7 +82,7 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
     \"WebServerSecurityGroup\": {
       \"Type\": \"AWS::EC2::SecurityGroup\",
       \"Properties\": {
-        \"GroupName\":\"csye6225-fall2017-$STACK_NAME-webapp\",
+        \"GroupName\":\"csye6225-webapp\",
         \"GroupDescription\": \"Enable HTTP access via port 80, SSH access via port 22, HTTPS access via port 443\",
         \"VpcId\": \"$VPC_ID\",
         \"SecurityGroupIngress\": [
@@ -101,6 +105,52 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
              \"CidrIp\": \"0.0.0.0/0\"
           }
         ]
+      }
+    },
+    \"DBInstance\" : {
+       \"Type\": \"AWS::RDS::DBInstance\",
+       \"Properties\": {
+          \"DBName\"                : \"csye6225\",
+          \"Engine\"                : \"mysql\",
+          \"EngineVersion\"         : \"5.6.35\",
+          \"MultiAZ\"               : \"false\",
+          \"PubliclyAccessible\"    : \"false\",
+          \"StorageType\"           : \"gp2\",
+          \"MasterUsername\"        : \"csye6225master\",
+          \"DBInstanceClass\"       : \"db.t2.medium\",
+          \"DBInstanceIdentifier\"  : \"csye6225-fall2017\",
+          \"AllocatedStorage\"      : \"10\",
+          \"DBSubnetGroupName\"     : { \"Ref\" : \"DBSubnetGroup\" },
+          \"MasterUserPassword\"    : \"csye6225password\",
+          \"VPCSecurityGroups\"     : [ { \"Fn::GetAtt\": [ \"DBSecurityGroup\", \"GroupId\" ] } ]
+       }
+    },
+    \"DBSecurityGroup\": {
+      \"Type\": \"AWS::EC2::SecurityGroup\",
+      \"Properties\": {
+        \"SecurityGroupIngress\": [
+            {
+              \"IpProtocol\": \"tcp\",
+              \"FromPort\": \"3306\",
+              \"ToPort\": \"3306\",
+              \"SourceSecurityGroupId\" : 
+                {
+                  \"Fn::GetAtt\": [
+                    \"WebServerSecurityGroup\",
+                    \"GroupId\"
+                  ]
+                }
+            }
+        ],
+        \"GroupName\":\"csye6225-rds\",
+        \"GroupDescription\": \"Frontend Access\"
+      }
+    },
+    \"DBSubnetGroup\": {
+      \"Type\": \"AWS::RDS::DBSubnetGroup\",
+      \"Properties\": {
+        \"DBSubnetGroupDescription\": \"My Subnet Group\",
+        \"SubnetIds\": [\"$SUBNET_ID\", \"$SUBNET_ID_1\"]
       }
     },
     \"MyDNSRecord\": {
