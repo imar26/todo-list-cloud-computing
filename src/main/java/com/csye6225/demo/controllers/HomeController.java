@@ -7,6 +7,8 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
 package com.csye6225.demo.controllers;
 import com.csye6225.demo.pojo.User;
+import com.csye6225.demo.repositories.AttachmentRepository;
+import com.csye6225.demo.repositories.TaskRepository;
 import com.csye6225.demo.repositories.UserRepository;
 import com.csye6225.demo.service.UserService;
 import com.google.gson.JsonObject;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -29,6 +32,12 @@ public class HomeController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private TaskRepository taskRepository;
+
+  @Autowired
+  private AttachmentRepository attachmentRepository;
 
   @Autowired
   private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -117,18 +126,7 @@ public class HomeController {
     }
     return json.toString();
   }
-  @RequestMapping(value = "/test", method = RequestMethod.GET, produces = "application/json")
-  @ResponseBody
-  public String test() {
-    JsonObject jsonObject = new JsonObject();
-    jsonObject.addProperty("message", "authorized for /test");
-    return jsonObject.toString();
-  }
-  @RequestMapping(value = "/testPost", method = RequestMethod.POST, produces = "application/json")
-  @ResponseBody
-  public String testPost() {
-    JsonObject jsonObject = new JsonObject();
-    jsonObject.addProperty("message", "authorized for /testPost");
-    return jsonObject.toString();
-  }
+
+
+
 }
