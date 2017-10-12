@@ -4,9 +4,11 @@ import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.repositories.AttachmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+@Service
 public class AttachmentService {
 
     private AttachmentRepository attachmentRepository;
@@ -17,8 +19,13 @@ public class AttachmentService {
     }
     //added last
     public ArrayList<Attachment> findAttachment(String taskId) {
-
-        System.out.println("enter att service"+taskId);
         return (ArrayList<Attachment>) attachmentRepository.findAttachmentByTasks(taskId);
+    }
+    public void deleteAttachment(Attachment attachment){
+        attachmentRepository.delete(attachment);
+    }
+
+    public Attachment findByAttachmentId (String attachmentId) {
+        return attachmentRepository.findByAttachmentId(attachmentId);
     }
 }

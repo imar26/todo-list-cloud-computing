@@ -59,9 +59,10 @@ public class HomeController {
   private AttachmentService attachmentService;
 
   @Autowired
-  public HomeController(UserService userService, TaskService taskService) {
+  public HomeController(UserService userService, TaskService taskService, AttachmentService attachmentService) {
     this.userService = userService;
     this.taskService = taskService;
+    this.attachmentService = attachmentService;
   }
 
   private final static Logger logger = LoggerFactory.getLogger(HomeController.class);
@@ -297,6 +298,39 @@ public class HomeController {
         json1.addProperty( "attachment id", att1.getAttachmentId());
         json1.addProperty("path", att1.getName());
         jArr.add(json1);
+      }
+    }
+    return jArr.toString();
+  }
+
+  @RequestMapping(value="/tasks/{id}/attachments/{idAttachments}", method=RequestMethod.DELETE, produces = "application/json")
+  @ResponseBody
+  public String deleteAttachmentByTaskId(HttpServletRequest request, HttpServletResponse response, @PathVariable String id, @PathVariable String idAttachments){
+    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+
+
+    JsonArray jArr = new JsonArray();
+    JsonObject json = new JsonObject();
+
+    Tasks taskExists = taskService.findByTaskId(id);
+    System.out.println("tasks coming in"+taskExists.getTaskId()+"attachment id coming in is"+idAttachments);
+    Attachment att = attachmentService.findByAttachmentId(idAttachments);
+    System.out.println("attachments coming in"+att.getAttachmentId());
+    if (taskExists==null || att==null || (taskExists==null && att==null)){
+      json.addProperty("message", "Please Enter Valid Task and Attachment ID");
+    }else {
+      //taskService.deleteTask(taskExists);
+      File file = new File(att.getName());
+      boolean status=file.delete();
+      System.out.println("status coming in"+status);
+      if(status) {
+        attachmentService.deleteAttachment(att);
+        json.addProperty("attachment id", att.getAttachmentId());
+        json.addProperty("task", taskExists.getTaskId());
+        jArr.add(json);
+      }else{
+        json.addProperty("could not delete file", att.getAttachmentId());
+        jArr.add(json);
       }
     }
     return jArr.toString();

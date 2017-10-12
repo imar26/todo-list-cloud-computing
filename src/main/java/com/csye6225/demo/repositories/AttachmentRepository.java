@@ -7,10 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 
-@Repository
+
 public interface AttachmentRepository extends CrudRepository<Attachment, String> {
 
     //added last
     ArrayList<Attachment> findAttachmentByTasks(String taskId);
+
+    Attachment findByAttachmentId(String attachmentId);
 
 }
