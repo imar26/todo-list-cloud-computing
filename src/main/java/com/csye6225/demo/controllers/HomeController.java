@@ -6,6 +6,8 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
  */
 
 package com.csye6225.demo.controllers;
+
+import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.AttachmentRepository;
 import com.csye6225.demo.repositories.TaskRepository;
@@ -18,14 +20,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 @Controller
 public class HomeController {
@@ -128,5 +133,42 @@ public class HomeController {
   }
 
 
+
+  @RequestMapping(value="/tasks", method=RequestMethod.POST, produces = "application/json")
+  @ResponseBody
+  public String addTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task){
+      response.setStatus(HttpServletResponse.SC_CREATED);
+      String taskId;
+      UUID uuid = UUID.randomUUID();
+      taskId = uuid.toString();
+      JsonObject json = new JsonObject();
+      Tasks t = new Tasks();
+      t.setTaskId(taskId);
+      String desc = task.getDescription();
+      t.setDescription(desc);
+      taskRepository.save(t);
+      json.addProperty("taskId", taskId);
+      json.addProperty("description", desc);
+      return json.toString();
+  }
+
+
+  @RequestMapping(value="/tasks/{id}", method=RequestMethod.PUT, produces = "application/json")
+  @ResponseBody
+  public String updateTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task){
+    response.setStatus(HttpServletResponse.SC_OK);
+    String taskId;
+    UUID uuid = UUID.randomUUID();
+    taskId = uuid.toString();
+    JsonObject json = new JsonObject();
+    Tasks t = new Tasks();
+    t.setTaskId(taskId);
+    String desc = task.getDescription();
+    t.setDescription(desc);
+    taskRepository.save(t);
+    json.addProperty("taskId", taskId);
+    json.addProperty("description", desc);
+    return json.toString();
+  }
 
 }
