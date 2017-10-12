@@ -13,6 +13,7 @@ import com.csye6225.demo.repositories.AttachmentRepository;
 import com.csye6225.demo.repositories.TaskRepository;
 import com.csye6225.demo.repositories.UserRepository;
 import com.csye6225.demo.service.UserService;
+import com.csye6225.demo.service.TaskService;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,9 +47,12 @@ public class HomeController {
 
   private UserService userService;
 
+  private TaskService taskService;
+
   @Autowired
-  public HomeController(UserService userService) {
+  public HomeController(UserService userService, TaskService taskService) {
     this.userService = userService;
+    this.taskService = taskService;
   }
 
   private final static Logger logger = LoggerFactory.getLogger(HomeController.class);
@@ -155,19 +156,24 @@ public class HomeController {
 
   @RequestMapping(value="/tasks/{id}", method=RequestMethod.PUT, produces = "application/json")
   @ResponseBody
-  public String updateTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task){
+  public String updateTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task, @PathVariable String id){
     response.setStatus(HttpServletResponse.SC_OK);
-    String taskId;
-    UUID uuid = UUID.randomUUID();
-    taskId = uuid.toString();
+
+    System.out.println("Id params is - "+id);
+
     JsonObject json = new JsonObject();
-    Tasks t = new Tasks();
-    t.setTaskId(taskId);
-    String desc = task.getDescription();
-    t.setDescription(desc);
-    taskRepository.save(t);
-    json.addProperty("taskId", taskId);
-    json.addProperty("description", desc);
+   // Tasks t = new Tasks();
+    Tasks taskExists = taskService.findByTaskId(id);
+    if (taskExists==null){
+      json.addProperty("message", "Please Enter Valid Task ID");
+    }else {
+      String desc = task.getDescription();
+      taskExists.setDescription(desc);
+      System.out.println("GettingDesc "+desc);
+      taskService.updateTask(taskExists);
+      json.addProperty("taskId", id);
+      json.addProperty("description", desc);
+    }
     return json.toString();
   }
 
