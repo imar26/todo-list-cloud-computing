@@ -23,4 +23,7 @@ public class TaskService {
         System.out.println("From Service " +tasks.getDescription());
         taskRepository.save(tasks);
     }
+    public void deleteTask(Tasks tasks){
+        taskRepository.delete(tasks);
+    }
 }

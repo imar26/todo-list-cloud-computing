@@ -176,5 +176,27 @@ public class HomeController {
     }
     return json.toString();
   }
+  @RequestMapping(value="/tasks/{id}", method=RequestMethod.DELETE, produces = "application/json")
+  @ResponseBody
+  public String deleteTask(HttpServletRequest request, HttpServletResponse response, @PathVariable String id){
+    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+
+
+
+    JsonObject json = new JsonObject();
+
+    Tasks taskExists = taskService.findByTaskId(id);
+    if (taskExists==null){
+      json.addProperty("message", "Please Enter Valid Task ID");
+
+    }else {
+
+      taskService.deleteTask(taskExists);
+
+      json.addProperty("message", "Task Deleted Successfully");
+      //System.out.println("Bhumika"+json.toString());
+    }
+    return json.toString();
+  }
 
 }
