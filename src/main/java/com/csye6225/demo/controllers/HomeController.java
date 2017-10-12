@@ -12,8 +12,9 @@ import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.AttachmentRepository;
 import com.csye6225.demo.repositories.TaskRepository;
 import com.csye6225.demo.repositories.UserRepository;
-import com.csye6225.demo.service.UserService;
 import com.csye6225.demo.service.TaskService;
+import com.csye6225.demo.service.UserService;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -151,6 +153,21 @@ public class HomeController {
       json.addProperty("taskId", taskId);
       json.addProperty("description", desc);
       return json.toString();
+  }
+
+  @RequestMapping(value="/tasks", method=RequestMethod.GET, produces = "application/json")
+  @ResponseBody
+  public String getAllTasks(HttpServletRequest request, HttpServletResponse response){
+    response.setStatus(HttpServletResponse.SC_OK);
+    JsonArray jarr =new JsonArray();
+    ArrayList<Tasks> taskList = taskService.getTasks();
+    for(Tasks t: taskList) {
+      JsonObject json = new JsonObject();
+      json.addProperty("taskId", t.getTaskId());
+      json.addProperty("description", t.getDescription());
+      jarr.add(json);
+    }
+    return jarr.toString();
   }
 
 
