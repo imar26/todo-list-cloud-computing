@@ -5,6 +5,8 @@ import com.csye6225.demo.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 public class TaskService {
 
@@ -22,5 +24,12 @@ public class TaskService {
     public void updateTask(Tasks tasks) {
         System.out.println("From Service " +tasks.getDescription());
         taskRepository.save(tasks);
+    }
+    public void deleteTask(Tasks tasks){
+        taskRepository.delete(tasks);
+    }
+
+    public ArrayList<Tasks> getTasks () {
+        return (ArrayList<Tasks>) taskRepository.findAll();
     }
 }

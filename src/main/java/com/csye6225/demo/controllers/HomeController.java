@@ -7,13 +7,15 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
 package com.csye6225.demo.controllers;
 
+import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.AttachmentRepository;
 import com.csye6225.demo.repositories.TaskRepository;
 import com.csye6225.demo.repositories.UserRepository;
-import com.csye6225.demo.service.UserService;
 import com.csye6225.demo.service.TaskService;
+import com.csye6225.demo.service.UserService;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +24,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
@@ -153,6 +160,21 @@ public class HomeController {
       return json.toString();
   }
 
+  @RequestMapping(value="/tasks", method=RequestMethod.GET, produces = "application/json")
+  @ResponseBody
+  public String getAllTasks(HttpServletRequest request, HttpServletResponse response){
+    response.setStatus(HttpServletResponse.SC_OK);
+    JsonArray jarr =new JsonArray();
+    ArrayList<Tasks> taskList = taskService.getTasks();
+    for(Tasks t: taskList) {
+      JsonObject json = new JsonObject();
+      json.addProperty("taskId", t.getTaskId());
+      json.addProperty("description", t.getDescription());
+      jarr.add(json);
+    }
+    return jarr.toString();
+  }
+
 
   @RequestMapping(value="/tasks/{id}", method=RequestMethod.PUT, produces = "application/json")
   @ResponseBody
@@ -173,6 +195,76 @@ public class HomeController {
       taskService.updateTask(taskExists);
       json.addProperty("taskId", id);
       json.addProperty("description", desc);
+    }
+    return json.toString();
+  }
+  @RequestMapping(value="/tasks/{id}", method=RequestMethod.DELETE, produces = "application/json")
+  @ResponseBody
+  public String deleteTask(HttpServletRequest request, HttpServletResponse response, @PathVariable String id){
+    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+
+
+
+    JsonObject json = new JsonObject();
+
+    Tasks taskExists = taskService.findByTaskId(id);
+    if (taskExists==null){
+      json.addProperty("message", "Please Enter Valid Task ID");
+
+    }else {
+
+      taskService.deleteTask(taskExists);
+
+      json.addProperty("message", "Task Deleted Successfully");
+      //System.out.println("Bhumika"+json.toString());
+    }
+    return json.toString();
+  }
+  @RequestMapping(value="/tasks/{id}/attachments", method=RequestMethod.POST)
+  @ResponseBody
+  public String addAttachment(HttpServletRequest request, HttpServletResponse response, @RequestParam("name") String name, @RequestParam("file") MultipartFile file, @PathVariable String id){
+    response.setStatus(HttpServletResponse.SC_CREATED);
+
+
+
+
+    JsonObject json = new JsonObject();
+
+    Tasks taskExists = taskService.findByTaskId(id);
+    if (taskExists==null){
+      json.addProperty("message", "Please Enter Valid Task ID");
+    }else {
+      try {
+        UUID uuid = UUID.randomUUID();
+        byte[] bytes = file.getBytes();
+        String rootPath = System.getProperty("user.home");
+        File dir = new File(rootPath + File.separator + "tmpFiles");
+        if (!dir.exists())
+          dir.mkdirs();
+
+
+        File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
+        BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+        stream.write(bytes);
+        stream.close();
+        Attachment att = new Attachment();
+        String att_id = uuid.toString();
+
+        att.setAttachmentId(att_id);
+
+        att.setName(name);
+        att.setTasks(taskExists);
+
+        attachmentRepository.save(att);
+
+        json.addProperty("Attachment id", att_id);
+        json.addProperty("Attachment name", name);
+
+
+      } catch(Exception e){
+        return null;
+      }
+
     }
     return json.toString();
   }
