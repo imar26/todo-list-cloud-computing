@@ -6,9 +6,13 @@ import java.util.Set;
 @Entity
 public class Tasks {
 
-    public Tasks(String taskId, String description) {
+    /*public Tasks(String taskId, String description) {
         this.taskId = taskId;
         this.description = description;
+    } */
+
+    public Tasks(){
+
     }
 
     @Id
