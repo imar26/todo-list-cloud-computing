@@ -148,19 +148,52 @@ public class HomeController {
   @RequestMapping(value="/tasks", method=RequestMethod.POST, produces = "application/json")
   @ResponseBody
   public String addTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task){
-      response.setStatus(HttpServletResponse.SC_CREATED);
-      String taskId;
-      UUID uuid = UUID.randomUUID();
-      taskId = uuid.toString();
-      JsonObject json = new JsonObject();
-      Tasks t = new Tasks();
-      t.setTaskId(taskId);
-      String desc = task.getDescription();
-      t.setDescription(desc);
-      taskRepository.save(t);
-      json.addProperty("taskId", taskId);
-      json.addProperty("description", desc);
-      return json.toString();
+    JsonObject jsonObject = new JsonObject();
+    final String auth = request.getHeader("Authorization");
+
+    if (auth != null && auth.startsWith("Basic")) {
+      String base64Credentials = auth.substring("Basic".length()).trim();
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
+
+      final String[] values = credentials.split(":", 2);
+      String userName = values[0];
+      String password = values[1];
+
+      if(userName.isEmpty() || password.isEmpty()){
+        jsonObject.addProperty("message", "Please Enter Credentials");
+      } else {
+        User user = userService.findByUserName(userName);
+        if (user == null) {
+          jsonObject.addProperty("message", "Please Enter Valid User Name");
+        } else {
+          String pass = user.getPassword();
+          if (bCryptPasswordEncoder.matches(password, pass)) {
+            String taskId;
+            UUID uuid = UUID.randomUUID();
+            taskId = uuid.toString();
+            Tasks t = new Tasks();
+            t.setTaskId(taskId);
+            t.setUser(user);
+            String desc = task.getDescription();
+            if(desc.length() > 4096) {
+              response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+              jsonObject.addProperty("message", "Character count is more than 4096");
+            } else {
+              response.setStatus(HttpServletResponse.SC_CREATED);
+              t.setDescription(desc);
+              taskRepository.save(t);
+              jsonObject.addProperty("taskId", taskId);
+              jsonObject.addProperty("description", desc);
+            }
+          } else {
+            jsonObject.addProperty("message", "Wrong Credentials!!!");
+          }
+        }
+      }
+    } else {
+      jsonObject.addProperty("message", "you are not authorized!!!");
+    }
+    return jsonObject.toString();
   }
 
   @RequestMapping(value="/tasks", method=RequestMethod.GET, produces = "application/json")

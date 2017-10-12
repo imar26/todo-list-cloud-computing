@@ -8,6 +8,7 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 package com.csye6225.demo.pojo;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 public class User {
@@ -24,6 +25,9 @@ public class User {
 
     @Column
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Tasks> tasks;
 
     public User(String userName, String password){
         this.userName = userName;
@@ -54,4 +58,11 @@ public class User {
         this.password = password;
     }
 
+    public Set<Tasks> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Tasks> tasks) {
+        this.tasks = tasks;
+    }
 }
