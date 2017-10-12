@@ -13,6 +13,7 @@ import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.AttachmentRepository;
 import com.csye6225.demo.repositories.TaskRepository;
 import com.csye6225.demo.repositories.UserRepository;
+import com.csye6225.demo.service.AttachmentService;
 import com.csye6225.demo.service.TaskService;
 import com.csye6225.demo.service.UserService;
 import com.google.gson.JsonArray;
@@ -26,16 +27,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.Multipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 public class HomeController {
@@ -55,6 +54,9 @@ public class HomeController {
   private UserService userService;
 
   private TaskService taskService;
+
+  //added last
+  private AttachmentService attachmentService;
 
   @Autowired
   public HomeController(UserService userService, TaskService taskService) {
@@ -222,51 +224,82 @@ public class HomeController {
   }
   @RequestMapping(value="/tasks/{id}/attachments", method=RequestMethod.POST)
   @ResponseBody
-  public String addAttachment(HttpServletRequest request, HttpServletResponse response, @RequestParam("name") String name, @RequestParam("file") MultipartFile file, @PathVariable String id){
+  public String addAttachment(HttpServletRequest request, HttpServletResponse response,@RequestParam("file") MultipartFile[] file1, @PathVariable String id){
     response.setStatus(HttpServletResponse.SC_CREATED);
 
-
-
-
+    JsonArray jsonArray = new JsonArray();
     JsonObject json = new JsonObject();
-
     Tasks taskExists = taskService.findByTaskId(id);
     if (taskExists==null){
       json.addProperty("message", "Please Enter Valid Task ID");
     }else {
       try {
-        UUID uuid = UUID.randomUUID();
-        byte[] bytes = file.getBytes();
-        String rootPath = System.getProperty("user.home");
-        File dir = new File(rootPath + File.separator + "tmpFiles");
-        if (!dir.exists())
-          dir.mkdirs();
+        for(MultipartFile file : file1) {
+          JsonObject json1 = new JsonObject();
+          System.out.println("file"+file.getOriginalFilename());
+          UUID uuid = UUID.randomUUID();
+          byte[] bytes = file.getBytes();
+          String rootPath = System.getProperty("user.home");
+          File dir = new File(rootPath + File.separator + "tmpFiles");
+          if (!dir.exists())
+            dir.mkdirs();
 
 
-        File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
-        BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-        stream.write(bytes);
-        stream.close();
-        Attachment att = new Attachment();
-        String att_id = uuid.toString();
+          File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+          BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+          stream.write(bytes);
+          stream.close();
+          Attachment att = new Attachment();
+          String att_id = uuid.toString();
 
-        att.setAttachmentId(att_id);
+          att.setAttachmentId(att_id);
 
-        att.setName(name);
-        att.setTasks(taskExists);
+          att.setName(serverFile.toString());
+          att.setTasks(taskExists);
 
-        attachmentRepository.save(att);
+          attachmentRepository.save(att);
 
-        json.addProperty("Attachment id", att_id);
-        json.addProperty("Attachment name", name);
-
+          json1.addProperty("Attachment id", att_id);
+          json1.addProperty("Attachment name", serverFile.toString());
+          jsonArray.add(json1);
+        }
 
       } catch(Exception e){
         return null;
       }
 
     }
-    return json.toString();
+    return jsonArray.toString();
+
+  }
+
+  //added last
+  @RequestMapping(value="/tasks/{id}/attachments", method=RequestMethod.GET, produces = "application/json")
+  @ResponseBody
+  public String getAttachmentByTaskId(HttpServletRequest request, HttpServletResponse response, @PathVariable String id){
+    response.setStatus(HttpServletResponse.SC_OK);
+
+    System.out.println("Id params is - "+id);
+
+    JsonArray jArr = new JsonArray();
+    JsonObject json = new JsonObject();
+    // Tasks t = new Tasks();
+    Tasks taskExists = taskService.findByTaskId(id);
+    if (taskExists==null){
+      json.addProperty("message", "Please Enter Valid Task ID");
+    }else {
+      //System.out.println("tasks coming in"+taskExists.getTaskId());
+      //System.out.println("task attachments are"+taskExists.getAttachment());
+      Set<Attachment> listAttachment = taskService.getAttachmentsByTaskId(taskExists);
+
+      for(Attachment att1 : listAttachment) {
+        JsonObject json1 = new JsonObject();
+        json1.addProperty( "attachment id", att1.getAttachmentId());
+        json1.addProperty("path", att1.getName());
+        jArr.add(json1);
+      }
+    }
+    return jArr.toString();
   }
 
 }
