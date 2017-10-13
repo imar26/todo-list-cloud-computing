@@ -145,7 +145,6 @@ public class HomeController {
   @RequestMapping(value="/tasks", method=RequestMethod.POST, produces = "application/json")
   @ResponseBody
   public String addTask(HttpServletRequest request, HttpServletResponse response, @RequestBody Tasks task){
-      response.setStatus(HttpServletResponse.SC_CREATED);
       String taskId;
       UUID uuid = UUID.randomUUID();
       taskId = uuid.toString();
@@ -153,10 +152,16 @@ public class HomeController {
       Tasks t = new Tasks();
       t.setTaskId(taskId);
       String desc = task.getDescription();
-      t.setDescription(desc);
-      taskRepository.save(t);
-      json.addProperty("taskId", taskId);
-      json.addProperty("description", desc);
+      if(desc.length() > 4096) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        json.addProperty("message", "Character count is more than 4096");
+      } else {
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        t.setDescription(desc);
+        taskRepository.save(t);
+        json.addProperty("taskId", taskId);
+        json.addProperty("description", desc);
+      }
       return json.toString();
   }
 
