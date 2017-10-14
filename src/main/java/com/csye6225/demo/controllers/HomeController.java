@@ -373,52 +373,84 @@ public class HomeController {
   @RequestMapping(value="/tasks/{id}/attachments", method=RequestMethod.POST)
   @ResponseBody
   public String addAttachment(HttpServletRequest request, HttpServletResponse response,@RequestParam("file") MultipartFile[] file1, @PathVariable String id){
-    response.setStatus(HttpServletResponse.SC_CREATED);
+      JsonObject jsonObject = new JsonObject();
+      final String auth = request.getHeader("Authorization");
 
-    JsonArray jsonArray = new JsonArray();
-    JsonObject json = new JsonObject();
-    Tasks taskExists = taskService.findByTaskId(id);
-    if (taskExists==null){
-      json.addProperty("message", "Please Enter Valid Task ID");
-    }else {
-      try {
-        for(MultipartFile file : file1) {
-          JsonObject json1 = new JsonObject();
-          System.out.println("file"+file.getOriginalFilename());
-          UUID uuid = UUID.randomUUID();
-          byte[] bytes = file.getBytes();
-          String rootPath = System.getProperty("user.home");
-          File dir = new File(rootPath + File.separator + "tmpFiles");
-          if (!dir.exists())
-            dir.mkdirs();
+      if (auth != null && auth.startsWith("Basic")) {
+          String base64Credentials = auth.substring("Basic".length()).trim();
+          String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
+
+          final String[] values = credentials.split(":", 2);
+          String userName = values[0];
+          String password = values[1];
+
+          if(userName.isEmpty() || password.isEmpty()){
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              jsonObject.addProperty("message", "Please Enter Credentials");
+          } else {
+              User user = userService.findByUserName(userName);
+              if (user == null) {
+                  response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                  jsonObject.addProperty("message", "Please Enter Valid User Name");
+              } else {
+                  String pass = user.getPassword();
+                  if (bCryptPasswordEncoder.matches(password, pass)) {
+                      response.setStatus(HttpServletResponse.SC_CREATED);
+                      JsonArray jsonArray = new JsonArray();
+
+                      Tasks taskExists = taskService.findByTaskId(id);
+                      if (taskExists==null){
+                          jsonObject.addProperty("message", "Please Enter Valid Task ID");
+                      } else if(taskExists.getUser().equals(user)) {
+                          try {
+                              for(MultipartFile file : file1) {
+                                  JsonObject json1 = new JsonObject();
+                                  System.out.println("file"+file.getOriginalFilename());
+                                  UUID uuid = UUID.randomUUID();
+                                  byte[] bytes = file.getBytes();
+                                  String rootPath = System.getProperty("user.home");
+                                  File dir = new File(rootPath + File.separator + "tmpFiles");
+                                  if (!dir.exists())
+                                      dir.mkdirs();
 
 
-          File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-          BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-          stream.write(bytes);
-          stream.close();
-          Attachment att = new Attachment();
-          String att_id = uuid.toString();
+                                  File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+                                  BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+                                  stream.write(bytes);
+                                  stream.close();
+                                  Attachment att = new Attachment();
+                                  String att_id = uuid.toString();
 
-          att.setAttachmentId(att_id);
+                                  att.setAttachmentId(att_id);
 
-          att.setName(serverFile.toString());
-          att.setTasks(taskExists);
+                                  att.setName(serverFile.toString());
+                                  att.setTasks(taskExists);
 
-          attachmentRepository.save(att);
+                                  attachmentRepository.save(att);
 
-          json1.addProperty("Attachment id", att_id);
-          json1.addProperty("Attachment name", serverFile.toString());
-          jsonArray.add(json1);
-        }
-
-      } catch(Exception e){
-        return null;
+                                  json1.addProperty("Attachment id", att_id);
+                                  json1.addProperty("Attachment name", serverFile.toString());
+                                  jsonArray.add(json1);
+                              }
+                              return jsonArray.toString();
+                          } catch(Exception e){
+                              return null;
+                          }
+                      } else if(!taskExists.getUser().equals(user)) {
+                          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                          jsonObject.addProperty("message", "You are not authorized to access this resource");
+                      }
+                  } else {
+                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                      jsonObject.addProperty("message", "Wrong Credentials!!!");
+                  }
+              }
+          }
+      } else {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          jsonObject.addProperty("message", "you are not authorized!!!");
       }
-
-    }
-    return jsonArray.toString();
-
+      return jsonObject.toString();
   }
 
   //added last
