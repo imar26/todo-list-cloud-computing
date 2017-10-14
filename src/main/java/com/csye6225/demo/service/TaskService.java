@@ -2,11 +2,11 @@ package com.csye6225.demo.service;
 
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
+import com.csye6225.demo.pojo.User;
 import com.csye6225.demo.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 @Service
@@ -35,7 +35,7 @@ public class TaskService {
         return task.getAttachment();
     }
 
-    public ArrayList<Tasks> getTasks () {
-        return (ArrayList<Tasks>) taskRepository.findAll();
+    public Set<Tasks> getTasksByUserId (User user) {
+        return user.getTasks();
     }
 }

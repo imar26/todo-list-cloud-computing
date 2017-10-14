@@ -27,7 +27,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.Multipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
@@ -160,10 +159,12 @@ public class HomeController {
       String password = values[1];
 
       if(userName.isEmpty() || password.isEmpty()){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         jsonObject.addProperty("message", "Please Enter Credentials");
       } else {
         User user = userService.findByUserName(userName);
         if (user == null) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           jsonObject.addProperty("message", "Please Enter Valid User Name");
         } else {
           String pass = user.getPassword();
@@ -186,11 +187,13 @@ public class HomeController {
               jsonObject.addProperty("description", desc);
             }
           } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             jsonObject.addProperty("message", "Wrong Credentials!!!");
           }
         }
       }
     } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
@@ -199,16 +202,58 @@ public class HomeController {
   @RequestMapping(value="/tasks", method=RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public String getAllTasks(HttpServletRequest request, HttpServletResponse response){
-    response.setStatus(HttpServletResponse.SC_OK);
-    JsonArray jarr =new JsonArray();
-    ArrayList<Tasks> taskList = taskService.getTasks();
-    for(Tasks t: taskList) {
-      JsonObject json = new JsonObject();
-      json.addProperty("taskId", t.getTaskId());
-      json.addProperty("description", t.getDescription());
-      jarr.add(json);
+    JsonObject jsonObject = new JsonObject();
+    JsonArray jsonArray =new JsonArray();
+    final String auth = request.getHeader("Authorization");
+
+    if (auth != null && auth.startsWith("Basic")) {
+      String base64Credentials = auth.substring("Basic".length()).trim();
+      String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
+
+      final String[] values = credentials.split(":", 2);
+      String userName = values[0];
+      String password = values[1];
+
+      if(userName.isEmpty() || password.isEmpty()){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        jsonObject.addProperty("message", "Please Enter Credentials");
+      } else {
+        User user = userService.findByUserName(userName);
+        if (user == null) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          jsonObject.addProperty("message", "Please Enter Valid User Name");
+        } else {
+          String pass = user.getPassword();
+          if (bCryptPasswordEncoder.matches(password, pass)) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            Set<Tasks> taskList = taskService.getTasksByUserId(user);
+
+            System.out.println("length of tasks: "  + taskList.size());
+
+            if(taskList.size() == 0) {
+              JsonObject json = new JsonObject();
+              json.addProperty("message", "No tasks found.");
+              jsonArray.add(json);
+            }
+
+            for(Tasks t: taskList) {
+              JsonObject json = new JsonObject();
+              json.addProperty("taskId", t.getTaskId());
+              json.addProperty("description", t.getDescription());
+              jsonArray.add(json);
+            }
+            return jsonArray.toString();
+          } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            jsonObject.addProperty("message", "Wrong Credentials!!!");
+          }
+        }
+      }
+    } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      jsonObject.addProperty("message", "you are not authorized!!!");
     }
-    return jarr.toString();
+    return jsonObject.toString();
   }
 
 
