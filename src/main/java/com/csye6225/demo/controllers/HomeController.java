@@ -159,10 +159,12 @@ public class HomeController {
       String password = values[1];
 
       if(userName.isEmpty() || password.isEmpty()){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         jsonObject.addProperty("message", "Please Enter Credentials");
       } else {
         User user = userService.findByUserName(userName);
         if (user == null) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           jsonObject.addProperty("message", "Please Enter Valid User Name");
         } else {
           String pass = user.getPassword();
@@ -185,11 +187,13 @@ public class HomeController {
               jsonObject.addProperty("description", desc);
             }
           } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             jsonObject.addProperty("message", "Wrong Credentials!!!");
           }
         }
       }
     } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
@@ -211,16 +215,27 @@ public class HomeController {
       String password = values[1];
 
       if(userName.isEmpty() || password.isEmpty()){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         jsonObject.addProperty("message", "Please Enter Credentials");
       } else {
         User user = userService.findByUserName(userName);
         if (user == null) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           jsonObject.addProperty("message", "Please Enter Valid User Name");
         } else {
           String pass = user.getPassword();
           if (bCryptPasswordEncoder.matches(password, pass)) {
             response.setStatus(HttpServletResponse.SC_OK);
             Set<Tasks> taskList = taskService.getTasksByUserId(user);
+
+            System.out.println("length of tasks: "  + taskList.size());
+
+            if(taskList.size() == 0) {
+              JsonObject json = new JsonObject();
+              json.addProperty("message", "No tasks found.");
+              jsonArray.add(json);
+            }
+
             for(Tasks t: taskList) {
               JsonObject json = new JsonObject();
               json.addProperty("taskId", t.getTaskId());
@@ -229,11 +244,13 @@ public class HomeController {
             }
             return jsonArray.toString();
           } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             jsonObject.addProperty("message", "Wrong Credentials!!!");
           }
         }
       }
     } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
