@@ -239,8 +239,6 @@ public class HomeController {
             response.setStatus(HttpServletResponse.SC_OK);
             Set<Tasks> taskList = taskService.getTasksByUserId(user);
 
-            System.out.println("length of tasks: "  + taskList.size());
-
             if(taskList.size() == 0) {
               JsonObject json = new JsonObject();
               json.addProperty("message", "No tasks found.");
@@ -395,13 +393,14 @@ public class HomeController {
               } else {
                   String pass = user.getPassword();
                   if (bCryptPasswordEncoder.matches(password, pass)) {
-                      response.setStatus(HttpServletResponse.SC_CREATED);
                       JsonArray jsonArray = new JsonArray();
 
                       Tasks taskExists = taskService.findByTaskId(id);
                       if (taskExists==null){
+                          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                           jsonObject.addProperty("message", "Please Enter Valid Task ID");
                       } else if(taskExists.getUser().equals(user)) {
+                          response.setStatus(HttpServletResponse.SC_CREATED);
                           try {
                               for(MultipartFile file : file1) {
                                   JsonObject json1 = new JsonObject();
@@ -428,8 +427,8 @@ public class HomeController {
 
                                   attachmentRepository.save(att);
 
-                                  json1.addProperty("Attachment id", att_id);
-                                  json1.addProperty("Attachment name", serverFile.toString());
+                                  json1.addProperty("attachmentID", att_id);
+                                  json1.addProperty("attachmentName", serverFile.toString());
                                   jsonArray.add(json1);
                               }
                               return jsonArray.toString();
@@ -457,29 +456,67 @@ public class HomeController {
   @RequestMapping(value="/tasks/{id}/attachments", method=RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public String getAttachmentByTaskId(HttpServletRequest request, HttpServletResponse response, @PathVariable String id){
-    response.setStatus(HttpServletResponse.SC_OK);
+      JsonObject jsonObject = new JsonObject();
+      final String auth = request.getHeader("Authorization");
 
-    System.out.println("Id params is - "+id);
+      if (auth != null && auth.startsWith("Basic")) {
+          String base64Credentials = auth.substring("Basic".length()).trim();
+          String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
 
-    JsonArray jArr = new JsonArray();
-    JsonObject json = new JsonObject();
-    // Tasks t = new Tasks();
-    Tasks taskExists = taskService.findByTaskId(id);
-    if (taskExists==null){
-      json.addProperty("message", "Please Enter Valid Task ID");
-    }else {
-      //System.out.println("tasks coming in"+taskExists.getTaskId());
-      //System.out.println("task attachments are"+taskExists.getAttachment());
-      Set<Attachment> listAttachment = taskService.getAttachmentsByTaskId(taskExists);
+          final String[] values = credentials.split(":", 2);
+          String userName = values[0];
+          String password = values[1];
 
-      for(Attachment att1 : listAttachment) {
-        JsonObject json1 = new JsonObject();
-        json1.addProperty( "attachment id", att1.getAttachmentId());
-        json1.addProperty("path", att1.getName());
-        jArr.add(json1);
+          if(userName.isEmpty() || password.isEmpty()){
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              jsonObject.addProperty("message", "Please Enter Credentials");
+          } else {
+              User user = userService.findByUserName(userName);
+              if (user == null) {
+                  response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                  jsonObject.addProperty("message", "Please Enter Valid User Name");
+              } else {
+                  String pass = user.getPassword();
+                  if (bCryptPasswordEncoder.matches(password, pass)) {
+                      JsonArray jsonArray = new JsonArray();
+
+                      Tasks taskExists = taskService.findByTaskId(id);
+
+                      if (taskExists==null){
+                          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                          jsonObject.addProperty("message", "Please Enter Valid Task ID");
+                      } else if(taskExists.getUser().equals(user)) {
+                          response.setStatus(HttpServletResponse.SC_OK);
+                          Set<Attachment> listAttachment = taskService.getAttachmentsByTaskId(taskExists);
+
+                          if(listAttachment.size() == 0) {
+                              JsonObject json = new JsonObject();
+                              json.addProperty("message", "No attachments found.");
+                              jsonArray.add(json);
+                          }
+
+                          for(Attachment att1 : listAttachment) {
+                              JsonObject json = new JsonObject();
+                              json.addProperty( "attachment id", att1.getAttachmentId());
+                              json.addProperty("path", att1.getName());
+                              jsonArray.add(json);
+                          }
+                          return jsonArray.toString();
+                      } else if(!taskExists.getUser().equals(user)) {
+                          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                          jsonObject.addProperty("message", "You are not authorized to access this resource");
+                      }
+                  } else {
+                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                      jsonObject.addProperty("message", "Wrong Credentials!!!");
+                  }
+              }
+          }
+      } else {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          jsonObject.addProperty("message", "you are not authorized!!!");
       }
-    }
-    return jArr.toString();
+      return jsonObject.toString();
   }
 
   @RequestMapping(value="/tasks/{id}/attachments/{idAttachments}", method=RequestMethod.DELETE, produces = "application/json")
