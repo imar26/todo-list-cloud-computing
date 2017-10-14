@@ -68,7 +68,7 @@ public class HomeController {
 
   @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
-  public String welcome(HttpServletRequest request) {
+  public String welcome(HttpServletRequest request, HttpServletResponse response) {
     JsonObject jsonObject = new JsonObject();
     final String auth = request.getHeader("Authorization");
     if (auth != null && auth.startsWith("Basic")) {
@@ -80,22 +80,27 @@ public class HomeController {
       String password = values[1];
 
       if(userName.isEmpty() || password.isEmpty()){
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         jsonObject.addProperty("message", "Please Enter Credentials");
       }
       else{
         User user = userService.findByUserName(userName);
         if (user == null) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           jsonObject.addProperty("message", "Please Enter Valid User Name");
         } else {
           String pass = user.getPassword();
           if (bCryptPasswordEncoder.matches(password, pass)) {
+            response.setStatus(HttpServletResponse.SC_OK);
             jsonObject.addProperty("message", "You are Logged In. Current Time is : " + new Date().toString());
           } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             jsonObject.addProperty("message", "Wrong Credentials!!!");
           }
         }
       }
     }else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
@@ -103,7 +108,7 @@ public class HomeController {
 
   @RequestMapping(value = "/user/register", method = RequestMethod.POST, produces = "application/json")
   @ResponseBody
-  public String save(HttpServletRequest request) {
+  public String save(HttpServletRequest request, HttpServletResponse response) {
     JsonObject json = new JsonObject();
     final String auth = request.getHeader("Authorization");
     if (auth != null && auth.startsWith("Basic")) {
@@ -116,8 +121,10 @@ public class HomeController {
       String password = values[1];
 
       if (userName.isEmpty()) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         json.addProperty("message", "Please enter username/password");
       } else if (password.isEmpty()) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         json.addProperty("message", "Please enter username/password");
       } else {
         password = bCryptPasswordEncoder.encode(password);
@@ -128,15 +135,19 @@ public class HomeController {
             user.setUserName(userName);
             user.setPassword(password);
             userRepository.save(user);
+            response.setStatus(HttpServletResponse.SC_OK);
             json.addProperty("message", "User Added Successfully");
           } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             json.addProperty("message", "User Account Already Exists!!!");
           }
         } catch (DataIntegrityViolationException e) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           json.addProperty("message", "User Account Already Exists!!!");
         }
       }
     } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       json.addProperty("message", "Please enter username/password");
     }
     return json.toString();
