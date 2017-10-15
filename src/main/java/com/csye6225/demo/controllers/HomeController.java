@@ -249,6 +249,19 @@ public class HomeController {
               JsonObject json = new JsonObject();
               json.addProperty("taskId", t.getTaskId());
               json.addProperty("description", t.getDescription());
+
+              Set<Attachment> attachmentList = t.getAttachment();
+
+              JsonArray attachmentArray =new JsonArray();
+              for(Attachment a: attachmentList) {
+                  JsonObject json1 = new JsonObject();
+                  json1.addProperty("attachmentID", a.getAttachmentId());
+                  json1.addProperty("attachmentName", a.getName());
+                  attachmentArray.add(json1);
+              }
+              System.out.println(attachmentArray);
+
+              json.add("attachments", attachmentArray);
               jsonArray.add(json);
             }
             return jsonArray.toString();
