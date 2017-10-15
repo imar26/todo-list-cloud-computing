@@ -363,6 +363,15 @@ public class HomeController {
                           jsonObject.addProperty("message", "Please Enter Valid Task ID");
                       } else if(taskExists.getUser().equals(user)) {
                           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                          Set<Attachment> attachmentList = taskExists.getAttachment();
+                          for(Attachment a: attachmentList) {
+                              Attachment att = attachmentService.findByAttachmentId(a.getAttachmentId());
+                              File file = new File(att.getName());
+                              boolean status=file.delete();
+                              if(status) {
+                                  attachmentService.deleteAttachment(att);
+                              }
+                          }
                           taskService.deleteTask(taskExists);
                           jsonObject.addProperty("message", "Task Deleted Successfully");
                       } else if(!taskExists.getUser().equals(user)) {
