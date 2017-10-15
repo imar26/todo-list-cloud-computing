@@ -522,34 +522,65 @@ public class HomeController {
   @RequestMapping(value="/tasks/{id}/attachments/{idAttachments}", method=RequestMethod.DELETE, produces = "application/json")
   @ResponseBody
   public String deleteAttachmentByTaskId(HttpServletRequest request, HttpServletResponse response, @PathVariable String id, @PathVariable String idAttachments){
-    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      JsonObject jsonObject = new JsonObject();
+      final String auth = request.getHeader("Authorization");
 
+      if (auth != null && auth.startsWith("Basic")) {
+          String base64Credentials = auth.substring("Basic".length()).trim();
+          String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
 
-    JsonArray jArr = new JsonArray();
-    JsonObject json = new JsonObject();
+          final String[] values = credentials.split(":", 2);
+          String userName = values[0];
+          String password = values[1];
 
-    Tasks taskExists = taskService.findByTaskId(id);
-    System.out.println("tasks coming in"+taskExists.getTaskId()+"attachment id coming in is"+idAttachments);
-    Attachment att = attachmentService.findByAttachmentId(idAttachments);
-    System.out.println("attachments coming in"+att.getAttachmentId());
-    if (taskExists==null || att==null || (taskExists==null && att==null)){
-      json.addProperty("message", "Please Enter Valid Task and Attachment ID");
-    }else {
-      //taskService.deleteTask(taskExists);
-      File file = new File(att.getName());
-      boolean status=file.delete();
-      System.out.println("status coming in"+status);
-      if(status) {
-        attachmentService.deleteAttachment(att);
-        json.addProperty("attachment id", att.getAttachmentId());
-        json.addProperty("task", taskExists.getTaskId());
-        jArr.add(json);
-      }else{
-        json.addProperty("could not delete file", att.getAttachmentId());
-        jArr.add(json);
+          if(userName.isEmpty() || password.isEmpty()){
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              jsonObject.addProperty("message", "Please Enter Credentials");
+          } else {
+              User user = userService.findByUserName(userName);
+              if (user == null) {
+                  response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                  jsonObject.addProperty("message", "Please Enter Valid User Name");
+              } else {
+                  String pass = user.getPassword();
+                  if (bCryptPasswordEncoder.matches(password, pass)) {
+                      Tasks taskExists = taskService.findByTaskId(id);
+                      Attachment att = attachmentService.findByAttachmentId(idAttachments);
+                      JsonArray jsonArray = new JsonArray();
+                      if (taskExists==null || att==null || (taskExists==null && att==null)){
+                          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                          jsonObject.addProperty("message", "Please Enter Valid Task and Attachment ID");
+                      } else if(taskExists.getUser().equals(user)) {
+                          File file = new File(att.getName());
+                          boolean status=file.delete();
+                          System.out.println("status coming in"+status);
+                          if(status) {
+                              response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                              attachmentService.deleteAttachment(att);
+                              jsonObject.addProperty("attachment id", att.getAttachmentId());
+                              jsonObject.addProperty("task", taskExists.getTaskId());
+                              jsonArray.add(jsonObject);
+                          } else {
+                              response.setStatus(HttpServletResponse.SC_OK);
+                              jsonObject.addProperty("could not delete file", att.getAttachmentId());
+                              jsonArray.add(jsonObject);
+                          }
+                          return jsonArray.toString();
+                      } else if(!taskExists.getUser().equals(user)) {
+                          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                          jsonObject.addProperty("message", "You are not authorized to access this resource");
+                      }
+                  } else {
+                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                      jsonObject.addProperty("message", "Wrong Credentials!!!");
+                  }
+              }
+          }
+      } else {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          jsonObject.addProperty("message", "you are not authorized!!!");
       }
-    }
-    return jArr.toString();
+      return jsonObject.toString();
   }
 
 }
