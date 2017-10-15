@@ -260,8 +260,9 @@ public class HomeController {
                   attachmentArray.add(json1);
               }
               System.out.println(attachmentArray);
-
-              json.add("attachments", attachmentArray);
+              if(attachmentArray.size() > 0) {
+                  json.add("attachments", attachmentArray);
+              }
               jsonArray.add(json);
             }
             return jsonArray.toString();
