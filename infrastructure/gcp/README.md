@@ -15,7 +15,7 @@ Yashodhan Prabhune 001220710  prabhune.y@husky.neu.edu
 
 gcloud compute instances create {{INSTANCE_NAME}} --machine-type {{MACHINE_TYPE_NAME}} --description {{DESCRIPTION}} --async --boot-disk-auto-delete --zone {{REGION}}
 
-For eg:- gcloud compute instances create my-new-instance --machine-type n1-standard-1 --description GoogleCloudInstance --async --boot-disk-auto-delete --zone us-east1-c 
+For eg:- gcloud compute instances create my-new-instance --machine-type n1-standard-1 --description GoogleCloudInstance --async --boot-disk-auto-delete --zone us-east1-c
 
 # gcloud sdk command to view list of instances
 
