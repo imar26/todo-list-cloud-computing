@@ -5,25 +5,25 @@ import javax.persistence.*;
 public class Attachment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int attachmentId;
+
+    private String attachmentId;
 
     @Column
     private String name;
 
-    public Attachment(String nameame){
-        this.name = name;
+    public Attachment(){
+
     }
 
     @ManyToOne
     @JoinColumn(name = "taskId")
     private Tasks tasks;
 
-    public int getAttachmentId() {
+    public String getAttachmentId() {
         return attachmentId;
     }
 
-    public void setAttachmentId(int attachmentId) {
+    public void setAttachmentId(String attachmentId) {
         this.attachmentId = attachmentId;
     }
 
@@ -31,7 +31,7 @@ public class Attachment {
         return name;
     }
 
-    public void setTaskName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
