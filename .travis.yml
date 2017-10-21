@@ -31,6 +31,16 @@ after_success:
 before_deploy:
   - cd ..
 
+deploy:
+  - provider: s3
+  - access_key_id: AKIAIITHJ4LFNWYTA3HQ
+  - secret_access_key:
+      secure : LZpHs3fuQVuXNyzRVeaaca6s0vwwR3El4XOQrwBzklPd/06BOvsvUXvhtJPtnDowWxRWiDlDUak4PdHII/VFsqwP8x3vrEBNNBO5Psgmvwf1aHPpUaxQO/FF7sxFSPIsJydrDLLPZA9qKil0/gOfaswYV9N1eqY2swJzm2T5I7z6usDgfjor9VySHTtq38+EcfXHVaFDcJ3pJ3tN9gWNSZrOcGA9ComyGval+bsrUjVenSMlUWlbFILRtZDjuLdXsuIYI5xMfDFHv+IvWo7H6sL7n0svApUZQJ1+ydo78vTtzGu+G3/41fIZY2FlCxu93McBGjS4v+2m82aBKPc+A7msGefFvEraBy1XyEhZ6wMfSaxqtCmWJW62K4cHJzsKiyPl9w9QZ8qdPeJdPdwlhWLyRolABVyilC/qdOlafH04JS2X1Iq6VMRZzeWovmfjX5LJxNzO0OHwaj5Hm4CwzsZ5u4mDAy4+y+XnI0SCW8/vfI1vTbtxdDITUTrBuEVdzZiOrZPu6uaDuLACyQ/qK2egJJ2ICCLF3ASJS59v2tLUuDNWbrl4niRt/+UgzMD3RVsBiXI08RVWxfQNCjIYvXkUI2itrkj247FmIYAVZkupRmoqN5meg/bw0wDBrcS46+y7o/9W97zKUsTSiBGLjeFMmuEzCOJz/Gdg1FWft5o=
+    local_dir: codedeploy
+    bucket: code-deploy.siddhantchandiwal.me
+    region: us-east-1
+    skip_cleanup: true
+
 notifications:
   email:
     recipients:
