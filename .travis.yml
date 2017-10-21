@@ -40,6 +40,8 @@ deploy:
     bucket: code-deploy.aadeshranderia.me
     region: us-east-1
     skip_cleanup: true
+    on:
+      all_branches: true
 
 notifications:
   email:
