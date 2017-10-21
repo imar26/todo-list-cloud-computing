@@ -40,6 +40,8 @@ deploy:
     bucket: code-deploy.bhumikakhatri.me
     region: us-east-2
     skip_cleanup: true
+    on:
+      all_branches: true
 
 notifications:
   email:
