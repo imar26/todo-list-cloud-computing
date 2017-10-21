@@ -13,8 +13,20 @@ sudo: false
 install: true
 
 script:
+  - ./gradlew build
   - ./gradlew war
   - ./gradlew test
+
+after_success:
+  - mkdir codedeploy
+  - zip -r csye6225-lab.zip build/libs/ROOT.war appspec.yml
+  - ls -al
+  - mv csye6225-lab.zip codedeploy/
+  - ls -al
+  - pwd
+  - cd codedeploy
+  - ls -al
+  - pwd
 
 notifications:
   email:
