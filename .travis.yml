@@ -53,8 +53,6 @@ deploy:
     secret_access_key:
       secure: MpUCwz+N2aj6AS0JOKp0sjzTcZo2gl7HpSUBTgo+uMdGvlN4qpObarxJalwF4Dz9bK7LerAh7xR74trRjE6PGwD+v+urSDtjzFVx08ZDbOb3VpG5H72dyTROnLUQ21wY5E9CereQAgr7RL48mLxsh2emfkSOsHTW9fjxmIZST86pmBUBBiHiH8c6QKx/4Z+u2dmM/ZZOQ1sguA70ThpGXhyMoilLOb/kYCKczi6Wh9aIsEmNSDmBbqxxFs+8Xk8jqQlDZB8TJ7gvqk8rdcyb2HpojJ6djGCzVNRJh5W2QQCg6SljBQpHnogOP0Nl4lGJuc2rhtiwg7tCOIm2sGRYhxllDLsWL28+LFi8KC50VJtAArWkEzIhrVnlWFDrHUa4dchKRch3om4SDqSchMAHYfOoO0CfBVTzSR9jvcoIZ8uFXC7Eu8s0ckxnMvwUK4ioLuqWYuPnYpgQJzSmrvCGCAUFDzbh/l8Ynaphf7F+BKlQW+3v3stR8L/35+ivSAF44JSqeGctHfEp7ZFPzRW3yJ+ks2CWf40qc+qz1y4F82NYg39l3b9mjAt7AmGcNhVPfxb6lfyd+OeWCEuJrIcoh4U7lZ7XK/Mk8p5kNK2cUwNbjNL3FdD/boqR8rACABAFJ5lPpUBCj/+8EBlebRIK9pYWIAnrsWrMXFr5R+BD18g=
     wait-until-deployed: true
-    on:
-      all_branches: true
 
 notifications:
   email:
