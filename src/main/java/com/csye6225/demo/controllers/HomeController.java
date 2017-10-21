@@ -427,11 +427,10 @@ public class HomeController {
                           try {
                               for(MultipartFile file : file1) {
                                   JsonObject json1 = new JsonObject();
-                                  System.out.println("file"+file.getOriginalFilename());
                                   UUID uuid = UUID.randomUUID();
                                   byte[] bytes = file.getBytes();
                                   String rootPath = System.getProperty("user.home");
-                                  File dir = new File(rootPath + File.separator + "tmpFiles");
+                                  File dir = new File(rootPath + File.separator + "tmpFiles" + File.separator + user.getUserId() + File.separator + taskExists.getTaskId());
                                   if (!dir.exists())
                                       dir.mkdirs();
 
