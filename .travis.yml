@@ -42,6 +42,17 @@ deploy:
     skip_cleanup: true
     on:
       all_branches: true
+ - provider: codedeploy
+   access_key_id: AKIAI7SFOP22K5O2C7GQ
+   bucket: code-deploy.bhumikakhatri.me
+   key: csye6225.zip
+   bundle_type: zip
+   application: csye6225
+   deployment_group: csye6225
+   region: us-east-1
+   secret_access_key:
+     secure: nZ1hmxEj7TVBEi0JIg3W3zdbSYZGJ+4QG4IR9GwYJL//qni4ocTPDsCU/3WemYJWG9WmEwUNDbJpoufrweHy/2jnhhbaRiFAiccVnmVgiQfHHbwUASXc8+XXdZLrvquQJC9aHwae+Nj+jhUNPl0gWlbGlgKz/dYbBW6gts1idIbryq7nZukHo6nBJxQM0Bfofb24IE68hCFEl8J0ugvuu6RqrYXDPwWQvlhqmXi3c7A/PQvd7XitVXszJqXIB9jUqSOt8qtpvzJABy4QFocs4OcyZeWrWBk/hOlicjocNWqAy92oNUl12TyBIg5kRaCa9ibsW0NSjCRtl0YBm9e0qnH10I/HvIR8T0Tx2augpyC9Yg6DTi8KrTlKeoKQ0b1ykRdlXragGTP0dXukh03IeqEa5rAK5gNpzRsxKQq45LoiZ7mJxi20NfLuXYZ8fP880OASlAemo1FdGqdboz5FVNpgTt2b8G3hT6JgKFy3KT/mTy/wF2SMbWaEx26ZgtBH4Mj7i1y+0jCVKplLvn9T/KtCA5wnhOMD67dalwsVtUTHPjbMcdwlnQbIr/YXMFYfNmE1pdBPVN01yHL3JfZOKF8rz1dmi8JpBapi2YMqgcUoYBO1bcn81vwpK0pdf6ZgZMUcJZKHCt30x1AheBczmWHHhMjP3CIdUQEzszbHywM=
+   wait-until-deployed: true
 
 notifications:
   email:
