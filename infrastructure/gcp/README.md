@@ -13,9 +13,15 @@ Yashodhan Prabhune 001220710  prabhune.y@husky.neu.edu
 
 # gcloud sdk command to create a virtual machine
 
+<<<<<<< HEAD
 gcloud compute instances create {{INSTANCE_NAME}} --machine-type {{MACHINE_TYPE_NAME}} --description {{DESCRIPTION}} --async --can-ip-forward --zone {{REGION}}
 
 For eg:- gcloud compute instances create my-new-instance --machine-type n1-standard-1 --description GoogleCloudInstance --async --can-ip-forward --zone us-east1-c
+=======
+gcloud compute instances create {{INSTANCE_NAME}} --machine-type {{MACHINE_TYPE_NAME}} --description {{DESCRIPTION}} --async --boot-disk-auto-delete --zone {{REGION}}
+
+For eg:- gcloud compute instances create my-new-instance --machine-type n1-standard-1 --description GoogleCloudInstance --async --boot-disk-auto-delete --zone us-east1-c
+>>>>>>> b72bb612a833399f5c8e54399318e3f2aae76022
 
 # gcloud sdk command to view list of instances
 
