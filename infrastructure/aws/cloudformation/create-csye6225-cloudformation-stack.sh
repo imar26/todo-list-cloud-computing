@@ -53,7 +53,7 @@ echo "Bucket Name "
 
 echo $BUCKET_NAME
 
-aws cloudformation create-stack --stack-name $1 --template-body "{
+aws cloudformation create-stack --stack-name $1 --capabilities "CAPABILITY_NAMED_IAM" --template-body "{
 \"AWSTemplateFormatVersion\": \"2010-09-09\",
   \"Description\": \"Sample CloudFormation Template for CSYE 6225 - Fall 2017\",
   \"Resources\": {
@@ -206,6 +206,26 @@ aws cloudformation create-stack --stack-name $1 --template-body "{
              }
         ]
        }
+    },
+    \"IAMPolicyS3\":{
+    \"Type\":\"AWS::IAM::ManagedPolicy\",
+    \"Properties\" :{
+    \"PolicyDocument\": {
+    \"Version\": \"2012-10-17\",
+      \"Statement\": [
+        {
+          \"Action\": [
+            \"s3:Get*\",
+            \"s3:List*\"
+          ],
+          \"Effect\": \"Allow\",
+          \"Resource\": \"*\"
+        }
+      ]
+    },
+    \"ManagedPolicyName\": \"CodeDeploy1-EC2-S3\"
+    }
+
     }
   }
 }"
