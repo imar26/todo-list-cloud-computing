@@ -1,0 +1,241 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation Template for CSYE 6225 - Fall 2017",
+  "Parameters": {
+    "ImageId": {
+      "Type": "String"
+    },
+    "InstanceType": {
+      "Type": "String"
+    },
+    "KeyName": {
+      "Type": "String"
+    },
+    "SubnetId": {
+      "Type": "String"
+    },
+    "GroupName": {
+      "Type": "String"
+    },
+    "HostedZoneId": {
+      "Type": "String"
+    },
+    "Name": {
+      "Type": "String"
+    },
+    "VpcId": {
+      "Type": "String"
+    },
+    "AllocatedStorage": {
+      "Type": "String"
+    },
+    "DBInstanceClass": {
+      "Type": "String"
+    },
+    "RDSGroupName": {
+      "Type": "String"
+    },
+    "Engine": {
+      "Type": "String"
+    },
+    "EngineVersion": {
+      "Type": "String"
+    },
+    "DBInstanceIdentifier": {
+      "Type": "String"
+    },
+    "DBUser": {
+      "Type": "String"
+    },
+    "DBPassword": {
+      "Type": "String"
+    },
+    "DBName": {
+      "Type": "String"
+    },
+    "SubnetId2": {
+      "Type": "String"
+    },
+    "TableName": {
+      "Type": "String"
+    },
+    "PrimaryKeyName": {
+      "Type": "String"
+    },
+    "S3BucketName": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "SecurityGroupIds": [{
+          "Fn::GetAtt": [
+            "WebServerSecurityGroup",
+            "GroupId"
+          ]
+        }],
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SubnetId": {
+          "Ref": "SubnetId"
+        },
+        "BlockDeviceMappings": [{
+          "DeviceName": "/dev/sdf",
+          "Ebs": {
+            "VolumeSize": "16",
+            "VolumeType": "gp2"
+          }
+        }]
+      }
+    },
+    "WebServerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": {
+          "Ref": "GroupName"
+        },
+        "GroupDescription": "Enable HTTP access via port 80, SSH access via port 22",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "80",
+          "ToPort": "80",
+          "CidrIp": "0.0.0.0/0"
+        },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "RDSInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "AllocatedStorage": {
+          "Ref": "AllocatedStorage"
+        },
+        "DBInstanceClass": {
+          "Ref": "DBInstanceClass"
+        },
+        "Engine": {
+          "Ref": "Engine"
+        },
+        "EngineVersion": {
+          "Ref": "EngineVersion"
+        },
+        "MultiAZ": "false",
+        "DBInstanceIdentifier": {
+          "Ref": "DBInstanceIdentifier"
+        },
+        "StorageType": "gp2",
+        "MasterUsername": {
+          "Ref": "DBUser"
+        },
+        "MasterUserPassword": {
+          "Ref": "DBPassword"
+        },
+        "DBSubnetGroupName": {
+          "Ref": "MyDBSubnetGroup"
+        },
+        "PubliclyAccessible": "false",
+        "DBName": {
+          "Ref": "DBName"
+        },
+        "VPCSecurityGroups": [{
+          "Fn::GetAtt": ["RDSSecurityGroup", "GroupId"]
+        }]
+      }
+    },
+    "RDSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Open database for access",
+        "GroupName": {
+          "Ref": "RDSGroupName"
+        },
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "3306",
+          "ToPort": "3306",
+          "SourceSecurityGroupId": {
+            "Fn::GetAtt": ["WebServerSecurityGroup", "GroupId"]
+          }
+        }]
+      }
+    },
+    "MyDBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Subnets available for the RDS DB Instance",
+        "SubnetIds": [{"Ref": "SubnetId"}, {"Ref": "SubnetId2"}]
+      }
+    },
+    "MyDynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": {"Ref": "TableName"},
+        "AttributeDefinitions": [{
+          "AttributeName": {
+            "Ref": "PrimaryKeyName"
+          },
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": {
+            "Ref": "PrimaryKeyName"
+          },
+          "KeyType": "HASH"
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": "5",
+          "WriteCapacityUnits": "5"
+        }
+      }
+    },
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {"Ref": "S3BucketName"}
+      }
+    },
+    "ResourceRecords": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": {
+          "Ref": "HostedZoneId"
+        },
+        "Name": {
+          "Ref": "Name"
+        },
+        "ResourceRecords": [{
+          "Fn::GetAtt": [
+            "EC2Instance",
+            "PublicIp"
+          ]
+        }],
+        "TTL": "60",
+        "Type": "A"
+      }
+    }
+  }
+}
