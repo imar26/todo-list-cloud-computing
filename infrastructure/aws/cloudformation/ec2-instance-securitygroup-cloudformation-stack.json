@@ -76,6 +76,7 @@
         "InstanceType": {
           "Ref": "InstanceType"
         },
+        "DisableApiTermination": "False",
         "SecurityGroupIds": [{
           "Fn::GetAtt": [
             "WebServerSecurityGroup",
@@ -258,6 +259,25 @@
         }],
         "TTL": "60",
         "Type": "A"
+      }
+    },
+    "IAMPolicyS3": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:Get*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "ManagedPolicyName": "CodeDeploy1-EC2-S3"
       }
     }
   }
