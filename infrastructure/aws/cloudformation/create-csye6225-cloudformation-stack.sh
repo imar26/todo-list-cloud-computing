@@ -1,14 +1,28 @@
 #CLOUDFORMATIONSTACK -- stack name
+
+echo "Getting Stack name as input from Terminal"
+
 export VPC_ID=$(aws ec2 describe-vpcs --query "Vpcs[0].VpcId" --output text)
+echo $VPC_ID
+
 export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[0].SubnetId" --output text)
 export SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[1].SubnetId" --output text)
+echo $SUBNET_ID_2
+
 export z_id=$(aws route53 list-hosted-zones --query 'HostedZones[0].Id' --output text)
 z_id=${z_id#*e/}
 export NAME=$(aws route53 list-hosted-zones --query "HostedZones[0].Name" --output text)
+echo $NAME
+
 export GROUP_NAME=csye6225-webapp
+echo $GROUP_NAME
+
 export RDS_GROUP_NAME=csye6225-rds
+echo $RDS_GROUP_NAME
+
 export ALLOCATED_STORAGE=10
 export DB_INSTANCE_CLASS=db.t2.medium
+
 export ENGINE=MySQL
 export ENGINE_VERSION=5.6.35
 export DB_INSTANCE_IDENTIFIER=csye6225-fall2017
