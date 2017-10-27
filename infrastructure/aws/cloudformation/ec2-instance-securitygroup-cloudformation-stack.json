@@ -64,6 +64,9 @@
     },
     "S3BucketName": {
       "Type": "String"
+    },
+    "S3POLICY": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -264,6 +267,7 @@
     "IAMPolicyS3": {
       "Type": "AWS::IAM::ManagedPolicy",
       "Properties": {
+        "Description": "This policy allows EC2 instances to get data from S3 buckets. This is required for EC2 instances to download latest application revision.",
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -277,7 +281,7 @@
             }
           ]
         },
-        "ManagedPolicyName": "CodeDeploy1-EC2-S3"
+        "ManagedPolicyName": {"Ref": "S3POLICY"}
       }
     }
   }
