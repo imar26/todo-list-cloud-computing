@@ -19,13 +19,13 @@ script:
 
 after_success:
   - mkdir codedeploy
-  - zip -r csye6225.zip build/libs/ROOT.war appspec.yml
-  - ls-al
-  - mv csye6225.zip codedeploy/
-  - ls-al
+  - zip -r csye6225-lab.zip build/libs/ROOT.war appspec.yml
+  - ls -al
+  - mv csye6225-lab.zip codedeploy/
+  - ls -al
   - pwd
   - cd codedeploy
-  - ls-al
+  - ls -al
   - pwd
 
 before_deploy:
@@ -33,25 +33,25 @@ before_deploy:
 
 deploy:
   - provider: s3
-    access_key_id: AKIAIITHJ4LFNWYTA3HQ
+    access_key_id: AKIAI7SFOP22K5O2C7GQ
     secret_access_key:
-      secure : LZpHs3fuQVuXNyzRVeaaca6s0vwwR3El4XOQrwBzklPd/06BOvsvUXvhtJPtnDowWxRWiDlDUak4PdHII/VFsqwP8x3vrEBNNBO5Psgmvwf1aHPpUaxQO/FF7sxFSPIsJydrDLLPZA9qKil0/gOfaswYV9N1eqY2swJzm2T5I7z6usDgfjor9VySHTtq38+EcfXHVaFDcJ3pJ3tN9gWNSZrOcGA9ComyGval+bsrUjVenSMlUWlbFILRtZDjuLdXsuIYI5xMfDFHv+IvWo7H6sL7n0svApUZQJ1+ydo78vTtzGu+G3/41fIZY2FlCxu93McBGjS4v+2m82aBKPc+A7msGefFvEraBy1XyEhZ6wMfSaxqtCmWJW62K4cHJzsKiyPl9w9QZ8qdPeJdPdwlhWLyRolABVyilC/qdOlafH04JS2X1Iq6VMRZzeWovmfjX5LJxNzO0OHwaj5Hm4CwzsZ5u4mDAy4+y+XnI0SCW8/vfI1vTbtxdDITUTrBuEVdzZiOrZPu6uaDuLACyQ/qK2egJJ2ICCLF3ASJS59v2tLUuDNWbrl4niRt/+UgzMD3RVsBiXI08RVWxfQNCjIYvXkUI2itrkj247FmIYAVZkupRmoqN5meg/bw0wDBrcS46+y7o/9W97zKUsTSiBGLjeFMmuEzCOJz/Gdg1FWft5o=
+      secure: nZ1hmxEj7TVBEi0JIg3W3zdbSYZGJ+4QG4IR9GwYJL//qni4ocTPDsCU/3WemYJWG9WmEwUNDbJpoufrweHy/2jnhhbaRiFAiccVnmVgiQfHHbwUASXc8+XXdZLrvquQJC9aHwae+Nj+jhUNPl0gWlbGlgKz/dYbBW6gts1idIbryq7nZukHo6nBJxQM0Bfofb24IE68hCFEl8J0ugvuu6RqrYXDPwWQvlhqmXi3c7A/PQvd7XitVXszJqXIB9jUqSOt8qtpvzJABy4QFocs4OcyZeWrWBk/hOlicjocNWqAy92oNUl12TyBIg5kRaCa9ibsW0NSjCRtl0YBm9e0qnH10I/HvIR8T0Tx2augpyC9Yg6DTi8KrTlKeoKQ0b1ykRdlXragGTP0dXukh03IeqEa5rAK5gNpzRsxKQq45LoiZ7mJxi20NfLuXYZ8fP880OASlAemo1FdGqdboz5FVNpgTt2b8G3hT6JgKFy3KT/mTy/wF2SMbWaEx26ZgtBH4Mj7i1y+0jCVKplLvn9T/KtCA5wnhOMD67dalwsVtUTHPjbMcdwlnQbIr/YXMFYfNmE1pdBPVN01yHL3JfZOKF8rz1dmi8JpBapi2YMqgcUoYBO1bcn81vwpK0pdf6ZgZMUcJZKHCt30x1AheBczmWHHhMjP3CIdUQEzszbHywM=
     local_dir: codedeploy
-    bucket: code-deploy.siddhantchandiwal.me
+    bucket: code-deploy.bhumikakhatri.me
     region: us-east-1
     skip_cleanup: true
     on:
       all_branches: true
-  - provide: codedeploy
-    access_key_id: AKIAIITHJ4LFNWYTA3HQ
-    bucket: code-deploy.siddhantchandiwal.me
+  - provider: codedeploy
+    access_key_id: AKIAI7SFOP22K5O2C7GQ
+    bucket: code-deploy.bhumikakhatri.me
     key: csye6225.zip
     bundle_type: zip
-    applicaion: csye6225
+    application: csye6225
     deployment_group: csye6225
     region: us-east-1
     secret_access_key:
-      secure: LZpHs3fuQVuXNyzRVeaaca6s0vwwR3El4XOQrwBzklPd/06BOvsvUXvhtJPtnDowWxRWiDlDUak4PdHII/VFsqwP8x3vrEBNNBO5Psgmvwf1aHPpUaxQO/FF7sxFSPIsJydrDLLPZA9qKil0/gOfaswYV9N1eqY2swJzm2T5I7z6usDgfjor9VySHTtq38+EcfXHVaFDcJ3pJ3tN9gWNSZrOcGA9ComyGval+bsrUjVenSMlUWlbFILRtZDjuLdXsuIYI5xMfDFHv+IvWo7H6sL7n0svApUZQJ1+ydo78vTtzGu+G3/41fIZY2FlCxu93McBGjS4v+2m82aBKPc+A7msGefFvEraBy1XyEhZ6wMfSaxqtCmWJW62K4cHJzsKiyPl9w9QZ8qdPeJdPdwlhWLyRolABVyilC/qdOlafH04JS2X1Iq6VMRZzeWovmfjX5LJxNzO0OHwaj5Hm4CwzsZ5u4mDAy4+y+XnI0SCW8/vfI1vTbtxdDITUTrBuEVdzZiOrZPu6uaDuLACyQ/qK2egJJ2ICCLF3ASJS59v2tLUuDNWbrl4niRt/+UgzMD3RVsBiXI08RVWxfQNCjIYvXkUI2itrkj247FmIYAVZkupRmoqN5meg/bw0wDBrcS46+y7o/9W97zKUsTSiBGLjeFMmuEzCOJz/Gdg1FWft5o=
+      secure: nZ1hmxEj7TVBEi0JIg3W3zdbSYZGJ+4QG4IR9GwYJL//qni4ocTPDsCU/3WemYJWG9WmEwUNDbJpoufrweHy/2jnhhbaRiFAiccVnmVgiQfHHbwUASXc8+XXdZLrvquQJC9aHwae+Nj+jhUNPl0gWlbGlgKz/dYbBW6gts1idIbryq7nZukHo6nBJxQM0Bfofb24IE68hCFEl8J0ugvuu6RqrYXDPwWQvlhqmXi3c7A/PQvd7XitVXszJqXIB9jUqSOt8qtpvzJABy4QFocs4OcyZeWrWBk/hOlicjocNWqAy92oNUl12TyBIg5kRaCa9ibsW0NSjCRtl0YBm9e0qnH10I/HvIR8T0Tx2augpyC9Yg6DTi8KrTlKeoKQ0b1ykRdlXragGTP0dXukh03IeqEa5rAK5gNpzRsxKQq45LoiZ7mJxi20NfLuXYZ8fP880OASlAemo1FdGqdboz5FVNpgTt2b8G3hT6JgKFy3KT/mTy/wF2SMbWaEx26ZgtBH4Mj7i1y+0jCVKplLvn9T/KtCA5wnhOMD67dalwsVtUTHPjbMcdwlnQbIr/YXMFYfNmE1pdBPVN01yHL3JfZOKF8rz1dmi8JpBapi2YMqgcUoYBO1bcn81vwpK0pdf6ZgZMUcJZKHCt30x1AheBczmWHHhMjP3CIdUQEzszbHywM=
     wait-until-deployed: true
 
 notifications:
