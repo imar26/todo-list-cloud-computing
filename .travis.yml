@@ -22,6 +22,9 @@ after_success:
   - zip -r csye6225.zip build/libs/ROOT.war appspec.yml
   - ls -al
   - mv csye6225.zip codedeploy/
+  - zip -r csye6225-lab.zip build/libs/ROOT.war appspec.yml
+  - ls -al
+  - mv csye6225-lab.zip codedeploy/
   - ls -al
   - pwd
   - cd codedeploy
