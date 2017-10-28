@@ -82,6 +82,12 @@
     },
     "MyCodeDeployServiceRole": {
       "Type": "String"
+    },
+    "TagKey": {
+      "Type": "String"
+    },
+    "TagValue": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -114,6 +120,13 @@
             "VolumeType": "gp2"
           }
         }],
+        "Tags": [
+          {
+            "Key": {"Ref": "TagKey"},
+            "Value": {"Ref": "TagValue"}
+          }
+        ],
+        "IamInstanceProfile": {"Ref": "CodeDeployServiceRoleInstanceProfile"},
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/bash -xe\n",
           "sudo apt-get update\n",
