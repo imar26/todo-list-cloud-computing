@@ -1,13 +1,6 @@
 #!/bin/bash
-export APACHE_DIR=$CATALINA_HOME
-echo $APACHE_DIR
 
-cd $APACHE_DIR
-
-cd bin
-
-./shutdown.sh
-
-#ps auwwx | grep catalina.startup.Bootstrap \
-
-./startup.sh
+sudo service tomcat8 stop
+cd /var/lib/tomcat8/webapps
+sudo rm -rf ROOT.war
+sudo service tomcat8 start
