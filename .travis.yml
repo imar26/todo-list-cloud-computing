@@ -51,6 +51,8 @@ deploy:
     region: us-east-1
     secret_access_key: $secret_access_key
     wait-until-deployed: true
+    on:
+      all_branches: true
 
 notifications:
   email:
