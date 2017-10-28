@@ -65,7 +65,16 @@
     "S3BucketName": {
       "Type": "String"
     },
-    "S3POLICY": {
+    "CodeDeployEC2S3": {
+      "Type": "String"
+    },
+    "TravisCIUploadS3": {
+      "Type": "String"
+    },
+    "TravisCICodeDeploy": {
+      "Type": "String"
+    },
+    "CodeDeployApplicationName": {
       "Type": "String"
     }
   },
@@ -264,7 +273,7 @@
         "Type": "A"
       }
     },
-    "IAMPolicyS3": {
+    "IAMPolicyCodeDeployEC2S3": {
       "Type": "AWS::IAM::ManagedPolicy",
       "Properties": {
         "Description": "This policy allows EC2 instances to get data from S3 buckets. This is required for EC2 instances to download latest application revision.",
@@ -281,7 +290,69 @@
             }
           ]
         },
-        "ManagedPolicyName": {"Ref": "S3POLICY"}
+        "ManagedPolicyName": {"Ref": "CodeDeployEC2S3"}
+      }
+    },
+    "IAMPolicyTravisCIUploadS3": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "This policy allows TravisCI to upload artifiacts from latest successful build to dedicated S3 bucket used by code deploy.",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyName": {"Ref": "TravisCIUploadS3"}
+      }
+    },
+    "IAMPolicyTravisCICodeDeploy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "This policy allows TravisCI to call CodeDeploy APIs to initiate application deployment on EC2 instances.",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "codedeploy:RegisterApplicationRevision",
+                "codedeploy:GetApplicationRevision"
+              ],
+              "Resource": {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":application:", {"Ref": "CodeDeployApplicationName"} ] ]}
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "codedeploy:CreateDeployment",
+                "codedeploy:GetDeployment"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "codedeploy:GetDeploymentConfig"
+              ],
+              "Resource": [
+                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.OneAtATime" ] ]},
+                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.HalfAtATime" ] ]},
+                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.AllAtOnce" ] ]}
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyName": {"Ref": "TravisCICodeDeploy"}
       }
     }
   }
