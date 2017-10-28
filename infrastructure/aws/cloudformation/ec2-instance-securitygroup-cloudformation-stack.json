@@ -76,6 +76,12 @@
     },
     "CodeDeployApplicationName": {
       "Type": "String"
+    },
+    "MyCodeDeployEC2ServiceRole": {
+      "Type": "String"
+    },
+    "MyCodeDeployServiceRole": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -353,6 +359,54 @@
           ]
         },
         "ManagedPolicyName": {"Ref": "TravisCICodeDeploy"}
+      }
+    },
+    "CodeDeployEC2ServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "ec2.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
+        "ManagedPolicyArns": [{"Ref": "IAMPolicyCodeDeployEC2S3"}],
+        "RoleName": {"Ref": "MyCodeDeployEC2ServiceRole"}
+      }
+    },
+    "CodeDeployServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "codedeploy.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"],
+        "RoleName": {"Ref": "MyCodeDeployServiceRole"}
+      }
+    },
+    "CodeDeployServiceRoleInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [ {
+          "Ref": "CodeDeployEC2ServiceRole"
+        } ]
       }
     }
   }
