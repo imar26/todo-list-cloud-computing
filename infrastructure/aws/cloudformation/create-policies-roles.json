@@ -16,6 +16,12 @@
     },
     "TravisUser": {
       "Type": "String"
+    },
+    "DBUser": {
+      "Type": "String"
+    },
+    "RDSConnectPolicyName": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -103,6 +109,30 @@
         },
         "ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"],
         "RoleName": {"Ref": "MyCodeDeployServiceRole"}
+      }
+    },
+    "RDSConnectPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {
+          "Ref": "RDSConnectPolicyName"
+        },
+        "Users": [{"Ref": "DBUser"}],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Action": [
+                "rds-db:connect"
+              ],
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        }
       }
     }
   }
