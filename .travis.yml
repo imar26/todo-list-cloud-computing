@@ -19,9 +19,9 @@ script:
 
 after_success:
   - mkdir codedeploy
-  - zip -r csye6225-lab.zip build/libs/ROOT.war appspec.yml
+  - zip -r csye6225.zip build/libs/ROOT.war appspec.yml restartTomcat.sh
   - ls -al
-  - mv csye6225-lab.zip codedeploy/
+  - mv csye6225.zip codedeploy/
   - ls -al
   - pwd
   - cd codedeploy
