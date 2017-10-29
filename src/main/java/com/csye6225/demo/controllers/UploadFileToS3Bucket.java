@@ -1,9 +1,9 @@
 package com.csye6225.demo.controllers;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,12 +12,16 @@ import java.io.FileOutputStream;
 
 public class UploadFileToS3Bucket {
 
-    private static String bucketName = "code-deploy.siddhantchandiwal.me";
-    private static String keyName = "AKIAIITHJ4LFNWYTA3HQ";
-    private static String fileName = "/home/siddhant/Desktop/Cloud_Old_Shell_Script.sh";
+   // private static String bucketName = "code-deploy.siddhantchandiwal.me";
+   // private static String keyName = "AKIAIITHJ4LFNWYTA3HQ";
+   // private static String fileName = "/home/siddhant/Desktop/Cloud_Old_Shell_Script.sh";
 
     public void uploadFile(MultipartFile multipartFile){
-        AmazonS3 s3client = new AmazonS3Client(new ProfileCredentialsProvider());
+
+        String bucketName = System.getProperty("bucket.name");
+        System.out.println("Bucket Name is : "+ bucketName);
+
+        AmazonS3 s3client = AmazonS3ClientBuilder.standard().withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
         try{
             System.out.println("Uploading file to S3 bucket");

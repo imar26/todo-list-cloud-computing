@@ -127,7 +127,17 @@
           "wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install\n",
           "chmod +x ./install\n",
           "sudo ./install auto\n",
-          "sudo service codedeploy-agent start\n"
+          "sudo service codedeploy-agent start\n",
+          "sudo service codedeploy-agent status\n",
+          "echo '#!/bin/sh' >> /usr/share/tomcat8/bin/setenv.sh \n",
+          {
+            "Fn::Sub": "echo 'JAVA_OPTS=\"$JAVA_OPTS -Dbucket.name=${S3BucketName}\"'' >> /usr/share/tomcat8/bin/setenv.sh\n"
+          },
+          "chmod +x /usr/share/tomcat8/bin/setenv.sh\n",
+          "chown tomcat8:tomcat8 /usr/share/tomcat8/bin/setenv.sh\n",
+          "chmod 777 -R /tmp\n",
+          "chmod 777 /var/lib/tomcat8 \n",
+          "chmod 777 /var/lib/tomcat8/webapps"
             ]
           ]
          }
