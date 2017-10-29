@@ -19,6 +19,8 @@ export z_id=$(aws route53 list-hosted-zones --query 'HostedZones[0].Id' --output
 z_id=${z_id#*e/}
 export NAME=$(aws route53 list-hosted-zones --query "HostedZones[0].Name" --output text)
 echo $NAME
+export NEW_NAME=${NAME%.}
+echo $NEW_NAME
 
 export GROUP_NAME=csye6225-webapp
 echo $GROUP_NAME
@@ -37,7 +39,7 @@ export DB_PASSWORD=dbpassword
 export DB_NAME=csye6225
 export PRIMARY_KEYNAME=id
 export TABLE_NAME=csye6225
-export S3_BUCKET_NAME=code-deploy.$NAME
+export S3_BUCKET_NAME=code-deploy.$NEW_NAME
 export TagKey=NAME
 export TagValue=csye6225
 export CodeDeployEC2S3=CodeDeploy-EC2-S3
