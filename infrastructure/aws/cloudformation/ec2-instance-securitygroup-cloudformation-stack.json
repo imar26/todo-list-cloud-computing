@@ -133,13 +133,15 @@
           "sudo apt-get install openjdk-8-jdk -y\n",
           "sudo apt-get install tomcat8 -y\n",
           "sudo service tomcat8 start\n",
+          "sudo apt-get update\n",
           "sudo apt-get install ruby -y\n",
           "sudo apt-get install wget\n",
           "cd /home/ubuntu\n",
           "wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install\n",
           "chmod +x ./install\n",
           "sudo ./install auto\n",
-          "sudo service codedeploy-agent start\n"
+          "sudo service codedeploy-agent start\n",
+          "sudo service codedeploy-agent status\n"
             ]
           ]
          }
