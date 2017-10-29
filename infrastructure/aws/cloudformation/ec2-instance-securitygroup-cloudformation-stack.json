@@ -120,7 +120,7 @@
           "sudo apt-get update\n",
           "sudo apt-get install openjdk-8-jdk -y\n",
           "sudo apt-get install tomcat8 -y\n",
-          "sudo service tomcat8 start\n",
+          "sudo service tomcat8 start\n",        
           "sudo apt-get install ruby -y\n",
           "sudo apt-get install wget\n",
           "cd /home/ubuntu\n",
