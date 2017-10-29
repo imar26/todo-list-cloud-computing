@@ -37,9 +37,9 @@ export DB_PASSWORD=dbpassword
 export DB_NAME=csye6225
 export PRIMARY_KEYNAME=id
 export TABLE_NAME=csye6225
-export S3_BUCKET_NAME=$NAME"csye6225.com"
+export S3_BUCKET_NAME=code-deploy.$NAME
 export TagKey=Name
-export TagValue=CSYE6225
+export TagValue=csye6225
 export CodeDeployEC2S3=CodeDeploy-EC2-S3
 export MyCodeDeployEC2ServiceRole=CodeDeployEC2ServiceRole
 
