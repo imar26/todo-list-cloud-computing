@@ -68,19 +68,7 @@
     "CodeDeployEC2S3": {
       "Type": "String"
     },
-    "TravisCIUploadS3": {
-      "Type": "String"
-    },
-    "TravisCICodeDeploy": {
-      "Type": "String"
-    },
-    "CodeDeployApplicationName": {
-      "Type": "String"
-    },
     "MyCodeDeployEC2ServiceRole": {
-      "Type": "String"
-    },
-    "MyCodeDeployServiceRole": {
       "Type": "String"
     },
     "TagKey": {
@@ -312,70 +300,6 @@
         "ManagedPolicyName": {"Ref": "CodeDeployEC2S3"}
       }
     },
-    "IAMPolicyTravisCIUploadS3": {
-      "Type": "AWS::IAM::ManagedPolicy",
-      "Properties": {
-        "Description": "This policy allows TravisCI to upload artifiacts from latest successful build to dedicated S3 bucket used by code deploy.",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "s3:PutObject"
-              ],
-              "Resource": [
-                "*"
-              ]
-            }
-          ]
-        },
-        "ManagedPolicyName": {"Ref": "TravisCIUploadS3"},
-        "Users": ["travis"]
-      }
-    },
-    "IAMPolicyTravisCICodeDeploy": {
-      "Type": "AWS::IAM::ManagedPolicy",
-      "Properties": {
-        "Description": "This policy allows TravisCI to call CodeDeploy APIs to initiate application deployment on EC2 instances.",
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:RegisterApplicationRevision",
-                "codedeploy:GetApplicationRevision"
-              ],
-              "Resource": {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":application:", {"Ref": "CodeDeployApplicationName"} ] ]}
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:CreateDeployment",
-                "codedeploy:GetDeployment"
-              ],
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "codedeploy:GetDeploymentConfig"
-              ],
-              "Resource": [
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.OneAtATime" ] ]},
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.HalfAtATime" ] ]},
-                {"Fn::Join" : [ "", [ "arn:aws:codedeploy:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":deploymentconfig:CodeDeployDefault.AllAtOnce" ] ]}
-              ]
-            }
-          ]
-        },
-        "ManagedPolicyName": {"Ref": "TravisCICodeDeploy"},
-        "Users": ["travis"]
-      }
-    },
     "CodeDeployEC2ServiceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -391,28 +315,6 @@
         },
         "ManagedPolicyArns": [{"Ref": "IAMPolicyCodeDeployEC2S3"}],
         "RoleName": {"Ref": "MyCodeDeployEC2ServiceRole"}
-      }
-    },
-    "CodeDeployServiceRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Sid": "",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "codedeploy.amazonaws.com"
-                ]
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"],
-        "RoleName": {"Ref": "MyCodeDeployServiceRole"}
       }
     },
     "CodeDeployServiceRoleInstanceProfile": {
