@@ -132,13 +132,22 @@
           "sudo service codedeploy-agent status\n",
           "echo '#!/bin/sh' >> /usr/share/tomcat8/bin/setenv.sh \n",
           {
+            "Fn::Sub": "echo 'JAVA_OPTS=\"$JAVA_OPTS -Dspring.datasource.url=jdbc:mysql://${RDSInstance.Endpoint.Address}:3306/csye6225\"' >> /usr/share/tomcat8/bin/setenv.sh\n"
+          },
+          {
+            "Fn::Sub": "echo 'JAVA_OPTS=\"$JAVA_OPTS -Dspring.datasource.username=${DBUser}\"' >> /usr/share/tomcat8/bin/setenv.sh\n"
+          },
+          {
+            "Fn::Sub": "echo 'JAVA_OPTS=\"$JAVA_OPTS -Dspring.datasource.password=${DBPassword}\"' >> /usr/share/tomcat8/bin/setenv.sh\n"
+          },
+          {
             "Fn::Sub": "echo 'JAVA_OPTS=\"$JAVA_OPTS -Dbucket.name=${S3BucketName}\"' >> /usr/share/tomcat8/bin/setenv.sh\n"
           },
           "chmod +x /usr/share/tomcat8/bin/setenv.sh\n",
           "chown tomcat8:tomcat8 /usr/share/tomcat8/bin/setenv.sh\n",
           "chmod 777 -R /tmp\n",
-          "chmod 777 /var/lib/tomcat8 \n",
-          "chmod 777 /var/lib/tomcat8/webapps\n"
+          "chmod 777 /var/lib/tomcat8\n",
+          "chmod 777 /var/lib/tomcat8/webapps"
             ]
           ]
          }
@@ -300,8 +309,7 @@
           "Statement": [
             {
               "Action": [
-                "s3:Get*",
-                "s3:List*"
+                "s3:*"
               ],
               "Effect": "Allow",
               "Resource": "*"
