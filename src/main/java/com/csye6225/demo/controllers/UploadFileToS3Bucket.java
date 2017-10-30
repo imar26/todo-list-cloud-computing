@@ -15,7 +15,7 @@ public class UploadFileToS3Bucket {
     public void uploadFile(MultipartFile multipartfile){
        // String endpointURL = System.getenv("spring.datasource.url");
        // String username = System.getProperty("spring.datasource.username");
-        String bucketName = "code-deploy.siddhantchandiwal.me";
+        String bucketName = System.getProperty("bucket.name");
 
 
         System.out.println("bucket name is :" + bucketName);
