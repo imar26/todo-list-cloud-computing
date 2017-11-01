@@ -37,7 +37,7 @@ Go to your root folder of the project - /csye6225-fall2017
 
 Go to the scripts folder: cd infrastructure/aws/cloudformation/
 
-Run Delete Cloud Formation Stack: ./delete-csye6225-cloudformation-stack.sh {StackName}
+Run Delete Cloud Formation Stack: ./delete-csye6225-cloudformation-stack.sh {BucketName} {StackName}
 
 ##Install Java on EC2 instance
 
@@ -68,7 +68,13 @@ Install and start codedeploy: wget https://aws-codedeploy-us-east-1.s3.amazonaws
                               sudo ./install auto
                               sudo service codedeploy-agent start
 
+## Install MySQL on EC2 instance
+Ssh to the EC2 instance: ssh ubuntu@{Public IP of EC2 Instance}
 
+Commands to run: sudo apt-get install mysql-server
+                 mysql -h {endpoint of rds instance} -P {port number} -u {database user with access to rds} -p
+                 
+                 
 ## Check if Java is installed on EC2 instance
 
 Ssh to the EC2 instance: ssh ubuntu@{Public IP of EC2 Instance}
