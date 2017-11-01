@@ -29,11 +29,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Set;
+import java.util.UUID;
 
 @Controller
 public class HomeController {
@@ -425,6 +426,7 @@ public class HomeController {
                       } else if(taskExists.getUser().equals(user)) {
                           response.setStatus(HttpServletResponse.SC_CREATED);
                           try {
+                              UploadFileToS3Bucket uploadToS3Bucket = new UploadFileToS3Bucket();
                               for(MultipartFile file : file1) {
                                   JsonObject json1 = new JsonObject();
                                   UUID uuid = UUID.randomUUID();
@@ -436,9 +438,10 @@ public class HomeController {
 
 
                                   File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-                                  BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-                                  stream.write(bytes);
-                                  stream.close();
+                                  //BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+                                  //stream.write(bytes);
+                                  //stream.close();
+                                  uploadToS3Bucket.uploadFile(file);
                                   Attachment att = new Attachment();
                                   String att_id = uuid.toString();
 

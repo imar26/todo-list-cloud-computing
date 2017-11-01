@@ -4,210 +4,45 @@
 #Aadesh Randeria,001224139,randeria.a@husky.neu.edu
 #Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
-#!/bin/bash
+#CLOUDFORMATIONSTACK -- stack name
 
-echo "getting stack name from command line"
+echo "Getting Stack name as input from Terminal"
 
-STACK_NAME=$1
-echo $STACK_NAME
-
-echo "got stack name"
-
-# Get VPC ID
 export VPC_ID=$(aws ec2 describe-vpcs --query "Vpcs[0].VpcId" --output text)
-
 echo $VPC_ID
 
-# Use the VPC ID to get subnet id
 export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[0].SubnetId" --output text)
+export SUBNET_ID_2=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[1].SubnetId" --output text)
+echo $SUBNET_ID_2
 
-echo $SUBNET_ID
+export z_id=$(aws route53 list-hosted-zones --query 'HostedZones[0].Id' --output text)
+z_id=${z_id#*e/}
+export NAME=$(aws route53 list-hosted-zones --query "HostedZones[0].Name" --output text)
+echo $NAME
+export NEW_NAME=${NAME%.}
+echo $NEW_NAME
 
-export SUBNET_ID_1=$(aws ec2 describe-subnets --filters "Name=vpc-id, Values=$VPC_ID" --query "Subnets[1].SubnetId" --output text)
+export GROUP_NAME=csye6225-webapp
+echo $GROUP_NAME
 
-echo $SUBNET_ID_1
+export RDS_GROUP_NAME=csye6225-rds
+echo $RDS_GROUP_NAME
 
-#Get hosted zone id
+export ALLOCATED_STORAGE=10
+export DB_INSTANCE_CLASS=db.t2.medium
 
-echo "Get hosted zone id"
+export ENGINE=MySQL
+export ENGINE_VERSION=5.6.35
+export DB_INSTANCE_IDENTIFIER=csye6225-fall2017
+export DB_USER=dbuser
+export DB_PASSWORD=dbpassword
+export DB_NAME=csye6225
+export PRIMARY_KEYNAME=id
+export TABLE_NAME=csye6225
+export S3_BUCKET_NAME=code-deploy.$NEW_NAME
+export TagKey=Name
+export TagValue=csye6225
+export CodeDeployEC2S3=CodeDeploy-EC2-S3
+export MyCodeDeployEC2ServiceRole=CodeDeployEC2ServiceRole
 
-HOSTED_ZONE_ID=$(aws route53 list-hosted-zones --query HostedZones[0].Id --output text)
-ZONE_ID=${HOSTED_ZONE_ID:12}
-echo $ZONE_ID
-
-echo "Got the domain name"
-
-#Get Domain Name
-
-echo "Getting the domain name"
-
-DOMAIN_NAME=$(aws route53 list-hosted-zones --query HostedZones[0].Name --output text)
-echo $DOMAIN_NAME
-
-echo "Got the domain name"
-
-BUCKET_NAME=$DOMAIN_NAME
-BUCKET_NAME+="csye6225.com"
-
-echo "Bucket Name "
-
-echo $BUCKET_NAME
-
-aws cloudformation create-stack --stack-name $1 --template-body "{
-\"AWSTemplateFormatVersion\": \"2010-09-09\",
-  \"Description\": \"Sample CloudFormation Template for CSYE 6225 - Fall 2017\",
-  \"Resources\": {
-    \"EC2Instance\": {
-      \"Type\": \"AWS::EC2::Instance\",
-      \"Properties\": {
-        \"ImageId\": \"ami-cd0f5cb6\",
-        \"InstanceType\": \"t2.micro\",
-        \"DisableApiTermination\":\"False\",
-        \"SecurityGroupIds\": [
-          {
-            \"Fn::GetAtt\": [
-              \"WebServerSecurityGroup\",
-              \"GroupId\"
-            ]
-          }
-        ],
-        \"KeyName\": \"csye6225-aws\",
-        \"BlockDeviceMappings\":[
-           {
-            \"DeviceName\":\"/dev/sda1\",
-            \"Ebs\":
-            {
-                \"VolumeSize\":16,
-                \"VolumeType\":\"gp2\"
-                }
-            }
-          ],
-        \"SubnetId\": \"$SUBNET_ID\"
-      }
-    },
-    \"WebServerSecurityGroup\": {
-      \"Type\": \"AWS::EC2::SecurityGroup\",
-      \"Properties\": {
-        \"GroupName\":\"csye6225-webapp\",
-        \"GroupDescription\": \"Enable HTTP access via port 80, SSH access via port 22, HTTPS access via port 443\",
-        \"VpcId\": \"$VPC_ID\",
-        \"SecurityGroupIngress\": [
-          {
-            \"IpProtocol\": \"tcp\",
-            \"FromPort\": \"80\",
-            \"ToPort\": \"80\",
-            \"CidrIp\": \"0.0.0.0/0\"
-          },
-          {
-            \"IpProtocol\": \"tcp\",
-            \"FromPort\": \"22\",
-            \"ToPort\": \"22\",
-            \"CidrIp\": \"0.0.0.0/0\"
-          },
-          {
-            \"IpProtocol\": \"tcp\",
-            \"FromPort\": \"443\",
-            \"ToPort\": \"443\",
-             \"CidrIp\": \"0.0.0.0/0\"
-          }
-        ]
-      }
-    },
-    \"DBInstance\" : {
-       \"Type\": \"AWS::RDS::DBInstance\",
-       \"Properties\": {
-          \"DBName\"                : \"csye6225\",
-          \"Engine\"                : \"mysql\",
-          \"EngineVersion\"         : \"5.6.35\",
-          \"MultiAZ\"               : \"false\",
-          \"PubliclyAccessible\"    : \"false\",
-          \"StorageType\"           : \"gp2\",
-          \"MasterUsername\"        : \"csye6225master\",
-          \"DBInstanceClass\"       : \"db.t2.medium\",
-          \"DBInstanceIdentifier\"  : \"csye6225-fall2017\",
-          \"AllocatedStorage\"      : \"10\",
-          \"DBSubnetGroupName\"     : { \"Ref\" : \"DBSubnetGroup\" },
-          \"MasterUserPassword\"    : \"csye6225password\",
-          \"VPCSecurityGroups\"     : [ { \"Fn::GetAtt\": [ \"DBSecurityGroup\", \"GroupId\" ] } ]
-       }
-    },
-    \"DBSecurityGroup\": {
-      \"Type\": \"AWS::EC2::SecurityGroup\",
-      \"Properties\": {
-        \"SecurityGroupIngress\": [
-            {
-              \"IpProtocol\": \"tcp\",
-              \"FromPort\": \"3306\",
-              \"ToPort\": \"3306\",
-              \"SourceSecurityGroupId\" :
-                {
-                  \"Fn::GetAtt\": [
-                    \"WebServerSecurityGroup\",
-                    \"GroupId\"
-                  ]
-                }
-            }
-        ],
-        \"GroupName\":\"csye6225-rds\",
-        \"GroupDescription\": \"Frontend Access\"
-      }
-    },
-    \"DBSubnetGroup\": {
-      \"Type\": \"AWS::RDS::DBSubnetGroup\",
-      \"Properties\": {
-        \"DBSubnetGroupDescription\": \"My Subnet Group\",
-        \"SubnetIds\": [\"$SUBNET_ID\", \"$SUBNET_ID_1\"]
-      }
-    },
-    \"myDynamoDBTable\" : {
-    \"Type\" :\"AWS::DynamoDB::Table\",
-    \"Properties\" : {
-    \"AttributeDefinitions\" : [
-        {
-    	    \"AttributeName\" : \"id\",
-    	    \"AttributeType\" : \"S\"
-    	}],
-    \"KeySchema\" : [
-       	 {
-   		     \"AttributeName\" : \"id\",
-   		     \"KeyType\" : \"HASH\"
-    	 }],
-    \"ProvisionedThroughput\" :
-         {
-            \"ReadCapacityUnits\" : \"5\",
-    	    \"WriteCapacityUnits\" : \"5\"
-         },
-    \"TableName\" : \"csye6225\"
-
-    	 }
-    },
-    \"myBucket\": {
-    	\"Type\": \"AWS::S3::Bucket\",
-        \"Properties\": {
-    		\"BucketName\" : \"$BUCKET_NAME\"
-
-    	}
-    },
-    \"MyDNSRecord\": {
-    \"Type\":\"AWS::Route53::RecordSet\",
-    \"Properties\" : {
-    \"Comment\" : \"DNS name for my instance.\",
-    \"Name\" : \"ec2.$DOMAIN_NAME\",
-    \"HostedZoneId\" : \"$ZONE_ID\",
-    \"Type\" : \"A\",
-    \"TTL\" : \"60\",
-    \"ResourceRecords\" :
-        [
-            {
-             \"Fn::GetAtt\" :
-                [
-                \"EC2Instance\", \"PublicIp\"
-                 ]
-             }
-        ]
-       }
-    }
-  }
-}"
-
-echo "Successfully created cloudformation"
+aws cloudformation create-stack --stack-name $1 --capabilities "CAPABILITY_NAMED_IAM" --template-body file://ec2-instance-securitygroup-cloudformation-stack.json --parameters ParameterKey=ImageId,ParameterValue=ami-cd0f5cb6 ParameterKey=VpcId,ParameterValue=$VPC_ID ParameterKey=SubnetId,ParameterValue=$SUBNET_ID ParameterKey=HostedZoneId,ParameterValue=$z_id ParameterKey=InstanceType,ParameterValue=t2.micro ParameterKey=KeyName,ParameterValue=csye6225-aws ParameterKey=GroupName,ParameterValue=$GROUP_NAME ParameterKey=Name,ParameterValue=$NAME ParameterKey=RDSGroupName,ParameterValue=$RDS_GROUP_NAME ParameterKey=AllocatedStorage,ParameterValue=$ALLOCATED_STORAGE ParameterKey=DBInstanceClass,ParameterValue=$DB_INSTANCE_CLASS ParameterKey=Engine,ParameterValue=$ENGINE ParameterKey=EngineVersion,ParameterValue=$ENGINE_VERSION ParameterKey=DBInstanceIdentifier,ParameterValue=$DB_INSTANCE_IDENTIFIER ParameterKey=DBUser,ParameterValue=$DB_USER ParameterKey=DBPassword,ParameterValue=$DB_PASSWORD ParameterKey=DBName,ParameterValue=$DB_NAME ParameterKey=SubnetId2,ParameterValue=$SUBNET_ID_2 ParameterKey=PrimaryKeyName,ParameterValue=$PRIMARY_KEYNAME ParameterKey=TableName,ParameterValue=$TABLE_NAME ParameterKey=S3BucketName,ParameterValue=$S3_BUCKET_NAME ParameterKey=TagKey,ParameterValue=$TagKey ParameterKey=TagValue,ParameterValue=$TagValue ParameterKey=MyCodeDeployEC2ServiceRole,ParameterValue=$MyCodeDeployEC2ServiceRole ParameterKey=CodeDeployEC2S3,ParameterValue=$CodeDeployEC2S3

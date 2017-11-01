@@ -13,8 +13,46 @@ sudo: false
 install: true
 
 script:
+  - ./gradlew build
   - ./gradlew war
   - ./gradlew test
+
+after_success:
+  - mkdir codedeploy
+  - zip -r csye6225.zip build/libs/ROOT.war appspec.yml restartTomcat.sh
+  - ls -al
+  - mv csye6225.zip codedeploy/
+  - ls -al
+  - pwd
+  - cd codedeploy
+  - ls -al
+  - pwd
+
+before_deploy:
+  - cd ..
+
+deploy:
+  - provider: s3
+    access_key_id: $access_key_id
+    secret_access_key: $secret_access_key
+    local_dir: codedeploy
+    bucket: $bucket
+    region: us-east-1
+    skip_cleanup: true
+    on:
+      all_branches: true
+  - provider: codedeploy
+    access_key_id: $access_key_id
+    bucket: $bucket
+    key: csye6225.zip
+    bundle_type: zip
+    application: csye6225
+    deployment_group: csye6225
+    region: us-east-1
+    secret_access_key: $secret_access_key
+    wait-until-deployed: true
+    on:
+      all_branches: true
 
 notifications:
   email:
