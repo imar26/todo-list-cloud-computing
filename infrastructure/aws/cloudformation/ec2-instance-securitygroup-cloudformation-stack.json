@@ -65,6 +65,9 @@
     "S3BucketName": {
       "Type": "String"
     },
+    "SNSName":{
+      "Type": "String"
+    },
     "CodeDeployEC2S3": {
       "Type": "String"
     },
@@ -280,6 +283,15 @@
       "Properties": {
         "BucketName": {"Ref": "S3BucketName"}
       }
+    },
+    "SNS":{
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "TopicName": {
+          "Ref": "SNSName"
+        }
+      }
+
     },
     "ResourceRecords": {
       "Type": "AWS::Route53::RecordSet",
