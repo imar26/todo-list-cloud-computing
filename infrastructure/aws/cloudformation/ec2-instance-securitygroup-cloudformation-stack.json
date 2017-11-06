@@ -266,18 +266,14 @@
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "TableName": {"Ref": "TableName"},
-        "AttributeDefinitions": [{
-          "AttributeName": {
-            "Ref": "PrimaryKeyName"
-          },
-          "AttributeType": "S"
-        },
+        "AttributeDefinitions": [
           {
             "AttributeName": {
-              "Ref": "UserName"
+              "Ref": "PrimaryKeyName"
             },
             "AttributeType": "S"
-          }],
+          }
+        ],
         "KeySchema": [{
           "AttributeName": {
             "Ref": "PrimaryKeyName"
@@ -290,7 +286,7 @@
         },
         "TimeToLiveSpecification":{
           "AttributeName": { "Ref": "TTLName"},
-          "Enabled" : "Yes"
+          "Enabled" : true
         }
       }
     },
