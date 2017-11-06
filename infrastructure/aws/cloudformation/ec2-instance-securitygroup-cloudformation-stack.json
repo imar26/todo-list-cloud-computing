@@ -62,6 +62,12 @@
     "PrimaryKeyName": {
       "Type": "String"
     },
+    "UserName":{
+      "Type": "String"
+    },
+    "TTLName":{
+      "Type": "String"
+    },
     "S3BucketName": {
       "Type": "String"
     },
@@ -265,7 +271,13 @@
             "Ref": "PrimaryKeyName"
           },
           "AttributeType": "S"
-        }],
+        },
+          {
+            "AttributeName": {
+              "Ref": "UserName"
+            },
+            "AttributeType": "S"
+          }],
         "KeySchema": [{
           "AttributeName": {
             "Ref": "PrimaryKeyName"
@@ -275,6 +287,10 @@
         "ProvisionedThroughput": {
           "ReadCapacityUnits": "5",
           "WriteCapacityUnits": "5"
+        },
+        "TimeToLiveSpecification":{
+          "AttributeName": { "Ref": "TTLName"},
+          "Enabled" : "Yes"
         }
       }
     },
