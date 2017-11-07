@@ -7,6 +7,11 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
 package com.csye6225.demo.controllers;
 
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.Topic;
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
@@ -31,10 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 public class HomeController {
@@ -154,22 +156,25 @@ public class HomeController {
     return json.toString();
   }
 
-  @RequestMapping(value = "/forgot-password", method=RequestMethod.POST, produces = "application/json")
+  @RequestMapping(value = "/forgot-password", method=RequestMethod.POST, produces = "application/json", consumes = "application/json")
   @ResponseBody
-  public String resetPassword(@RequestBody String userName, HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-      response.setStatus(HttpServletResponse.SC_OK);
-      DynamoUser dbUser = new DynamoUser();
-      System.out.println("Inside resetPassword Method");
+  public String resetPassword(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
       JsonObject jsonObject = new JsonObject();
+      response.setStatus(HttpServletResponse.SC_OK);
 
-      if(dbUser.verifyTokenInDynamo(userName)){
-          //Add Logic here
-      }else{
-          dbUser.addTokenForUser(userName);
-          //Add Logic here
+      AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+      List<Topic> topics = snsClient.listTopics().getTopics();
+
+      for(Topic topic : topics){
+          if(topic.getTopicArn().endsWith("password_reset")){
+              PublishRequest req = new PublishRequest(topic.getTopicArn(), user.getUserName());
+              snsClient.publish(req);
+              break;
+          }
       }
+      jsonObject.addProperty("message", "Reset Link sent to Email Address");
       return jsonObject.toString();
   }
 
