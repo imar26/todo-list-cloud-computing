@@ -228,7 +228,7 @@ public class HomeController {
 
   @RequestMapping(value="/forgot-password", method=RequestMethod.POST, produces = "application/json")
   @ResponseBody
-  public String passwordReset(HttpServletRequest request, HttpServletResponse response, @RequestBody String userName){
+  public String passwordReset(HttpServletRequest request, HttpServletResponse response, @RequestParam("username") String userName){
       JsonObject jsonObject = new JsonObject();
       JsonArray jsonArray =new JsonArray();
 
@@ -237,6 +237,7 @@ public class HomeController {
               jsonObject.addProperty("message", "Please Enter username");
           }else{
               User user = userService.findByUserName(userName);
+              System.out.println("user is"+user.getUserName());
               if (user == null) {
                   response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                   jsonObject.addProperty("message", "Please Enter Valid User Name");
@@ -252,7 +253,7 @@ public class HomeController {
                   //String msg = "My text published to SNS topic with email endpoint";
                   PublishRequest publishRequest = new PublishRequest(topicArn, userName);
                   PublishResult publishResult = snsClient.publish(publishRequest);
-
+                  response.setStatus(HttpServletResponse.SC_OK);
                   jsonObject.addProperty("message", "Password Reset link sent to User");
                   return jsonObject.toString();
               }
@@ -260,7 +261,7 @@ public class HomeController {
           }
 
 
-      response.setStatus(HttpServletResponse.SC_OK);
+
       return jsonObject.toString();
   }
 
