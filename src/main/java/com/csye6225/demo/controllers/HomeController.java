@@ -10,7 +10,9 @@ package com.csye6225.demo.controllers;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.ListTopicsResult;
 import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.amazonaws.services.sns.model.Topic;
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
@@ -165,16 +167,22 @@ public class HomeController {
 
       AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
-      List<Topic> topics = snsClient.listTopics().getTopics();
+      List<Topic> topicArns = new ArrayList<>();
 
-      for(Topic topic : topics){
+      ListTopicsResult result = snsClient.listTopics();
+      topicArns.addAll(result.getTopics());
+      String topicArn=null;
+
+      for(Topic topic : topicArns){
           if(topic.getTopicArn().endsWith("password_reset")){
-              PublishRequest req = new PublishRequest(topic.getTopicArn(), user.getUserName());
-              snsClient.publish(req);
-              break;
+              topicArn = topic.getTopicArn();
           }
       }
-      jsonObject.addProperty("message", "Reset Link sent to Email Address");
+
+      //Publish to SNS Topic
+      PublishRequest publishRequest = new PublishRequest(topicArn, user.getUserName());
+      PublishResult publishResult = snsClient.publish(publishRequest);
+      jsonObject.addProperty("message", "Password Reset link sent to User");
       return jsonObject.toString();
   }
 
