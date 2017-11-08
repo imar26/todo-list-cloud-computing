@@ -8,9 +8,13 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 package com.csye6225.demo.controllers;
 
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
@@ -244,7 +248,8 @@ public class HomeController {
                   jsonObject.addProperty("message", "Please Enter Valid User Name");
               } else {
                   System.out.println("Reach 1");
-                  AmazonSNSClient snsClient = new AmazonSNSClient(new ClasspathPropertiesFileCredentialsProvider());
+                  AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
                   snsClient.setRegion(Region.getRegion(Regions.US_EAST_1));
                   String topicArn =
                           snsClient.createTopic("password_reset").getTopicArn();
