@@ -7,6 +7,10 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
 package com.csye6225.demo.controllers;
 
+import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNSClient;
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
@@ -26,6 +30,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.amazonaws.services.sns.model.CreateTopicRequest;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.SubscribeRequest;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
+import com.amazonaws.services.sns.model.DeleteTopicRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -209,6 +219,50 @@ public class HomeController {
       jsonObject.addProperty("message", "you are not authorized!!!");
     }
     return jsonObject.toString();
+  }
+
+  @RequestMapping(value="/forgot-password", method=RequestMethod.POST, produces = "application/json")
+  @ResponseBody
+  public String passwordReset(HttpServletRequest request, HttpServletResponse response){
+      JsonObject jsonObject = new JsonObject();
+      JsonArray jsonArray =new JsonArray();
+      final String auth = request.getHeader("Authorization");
+
+      if (auth != null && auth.startsWith("Basic")) {
+          String base64Credentials = auth.substring("Basic".length()).trim();
+          String credentials = new String(Base64.getDecoder().decode(base64Credentials),Charset.forName("UTF-8"));
+
+          final String[] values = credentials.split(":", 2);
+          String userName = values[0];
+          if(userName.isEmpty()){
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              jsonObject.addProperty("message", "Please Enter Credentials");
+          }else{
+              User user = userService.findByUserName(userName);
+              if (user == null) {
+                  response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                  jsonObject.addProperty("message", "Please Enter Valid User Name");
+              } else {
+                  System.out.println("Reach 1");
+                  AmazonSNSClient snsClient = new AmazonSNSClient(new ClasspathPropertiesFileCredentialsProvider());
+                  snsClient.setRegion(Region.getRegion(Regions.US_EAST_1));
+                  String topicArn =
+                          snsClient.createTopic("password_reset").getTopicArn();
+                  System.out.println("Reach 2");
+                  //publish to an SNS topic
+                  String msg = "My text published to SNS topic with email endpoint";
+                  PublishRequest publishRequest = new PublishRequest(topicArn, msg);
+                  PublishResult publishResult = snsClient.publish(publishRequest);
+                  System.out.println("Topic ARN"+topicArn);
+                  System.out.println("MessageId - " + publishResult.getMessageId());
+                  System.out.println("Reach 3");
+              }
+
+          }
+      }
+
+      response.setStatus(HttpServletResponse.SC_OK);
+      return jsonObject.toString();
   }
 
   @RequestMapping(value="/tasks", method=RequestMethod.GET, produces = "application/json")
