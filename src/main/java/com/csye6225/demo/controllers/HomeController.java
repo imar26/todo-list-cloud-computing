@@ -7,15 +7,12 @@ Siddhant Chandiwal,001286480,chandiwal.s@husky.neu.edu
 
 package com.csye6225.demo.controllers;
 
-import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClient;
-import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.csye6225.demo.pojo.Attachment;
 import com.csye6225.demo.pojo.Tasks;
 import com.csye6225.demo.pojo.User;
@@ -35,12 +32,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.amazonaws.services.sns.model.CreateTopicRequest;
-import com.amazonaws.services.sns.model.CreateTopicResult;
-import com.amazonaws.services.sns.model.SubscribeRequest;
-import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
-import com.amazonaws.services.sns.model.DeleteTopicRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -169,24 +160,24 @@ public class HomeController {
     return json.toString();
   }
 
-  @RequestMapping(value = "/forgot-password", method=RequestMethod.POST, produces = "application/json")
-  @ResponseBody
-  public String resetPassword(@RequestBody String userName, HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-      response.setStatus(HttpServletResponse.SC_OK);
-      DynamoUser dbUser = new DynamoUser();
-      System.out.println("Inside resetPassword Method");
-
-      JsonObject jsonObject = new JsonObject();
-
-      if(dbUser.verifyTokenInDynamo(userName)){
-          //Add Logic here
-      }else{
-          dbUser.addTokenForUser(userName);
-          //Add Logic here
-      }
-      return jsonObject.toString();
-  }
+//  @RequestMapping(value = "/forgot-password", method=RequestMethod.POST, produces = "application/json")
+//  @ResponseBody
+//  public String resetPassword(@RequestBody String userName, HttpServletRequest request, HttpServletResponse response) throws Exception {
+//
+//      response.setStatus(HttpServletResponse.SC_OK);
+//      DynamoUser dbUser = new DynamoUser();
+//      System.out.println("Inside resetPassword Method");
+//
+//      JsonObject jsonObject = new JsonObject();
+//
+//      if(dbUser.verifyTokenInDynamo(userName)){
+//          //Add Logic here
+//      }else{
+//          dbUser.addTokenForUser(userName);
+//          //Add Logic here
+//      }
+//      return jsonObject.toString();
+//  }
 
 
 
