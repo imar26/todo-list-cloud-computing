@@ -321,7 +321,8 @@
           "Statement": [
             {
               "Action": [
-                "s3:*"
+                "s3:*",
+                "sns:*"
               ],
               "Effect": "Allow",
               "Resource": "*"
