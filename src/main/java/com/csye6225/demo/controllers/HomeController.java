@@ -169,6 +169,25 @@ public class HomeController {
     return json.toString();
   }
 
+  @RequestMapping(value = "/forgot-password", method=RequestMethod.POST, produces = "application/json")
+  @ResponseBody
+  public String resetPassword(@RequestBody String userName, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+      response.setStatus(HttpServletResponse.SC_OK);
+      DynamoUser dbUser = new DynamoUser();
+      System.out.println("Inside resetPassword Method");
+
+      JsonObject jsonObject = new JsonObject();
+
+      if(dbUser.verifyTokenInDynamo(userName)){
+          //Add Logic here
+      }else{
+          dbUser.addTokenForUser(userName);
+          //Add Logic here
+      }
+      return jsonObject.toString();
+  }
+
 
 
   @RequestMapping(value="/tasks", method=RequestMethod.POST, produces = "application/json")
