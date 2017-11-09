@@ -62,7 +62,16 @@
     "PrimaryKeyName": {
       "Type": "String"
     },
+    "UserName":{
+      "Type": "String"
+    },
+    "TTLName":{
+      "Type": "String"
+    },
     "S3BucketName": {
+      "Type": "String"
+    },
+    "SNSName":{
       "Type": "String"
     },
     "CodeDeployEC2S3": {
@@ -120,7 +129,7 @@
           "sudo apt-get update\n",
           "sudo apt-get install openjdk-8-jdk -y\n",
           "sudo apt-get install tomcat8 -y\n",
-          "sudo service tomcat8 start\n",        
+          "sudo service tomcat8 start\n",
           "sudo apt-get update\n",
           "sudo apt-get install ruby -y\n",
           "sudo apt-get install wget\n",
@@ -148,9 +157,9 @@
           "chmod 777 -R /tmp\n",
           "chmod 777 /var/lib/tomcat8\n",
           "chmod 777 /var/lib/tomcat8/webapps"
-            ]
-          ]
-         }
+        ]
+        ]
+        }
         }
       }
     },
@@ -257,12 +266,14 @@
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "TableName": {"Ref": "TableName"},
-        "AttributeDefinitions": [{
-          "AttributeName": {
-            "Ref": "PrimaryKeyName"
-          },
-          "AttributeType": "S"
-        }],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": {
+              "Ref": "PrimaryKeyName"
+            },
+            "AttributeType": "S"
+          }
+        ],
         "KeySchema": [{
           "AttributeName": {
             "Ref": "PrimaryKeyName"
@@ -272,6 +283,10 @@
         "ProvisionedThroughput": {
           "ReadCapacityUnits": "5",
           "WriteCapacityUnits": "5"
+        },
+        "TimeToLiveSpecification":{
+          "AttributeName": { "Ref": "TTLName"},
+          "Enabled" : true
         }
       }
     },
@@ -279,6 +294,14 @@
       "Type": "AWS::S3::Bucket",
       "Properties": {
         "BucketName": {"Ref": "S3BucketName"}
+      }
+    },
+    "SNS":{
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "TopicName": {
+          "Ref": "SNSName"
+        }
       }
     },
     "ResourceRecords": {
@@ -309,7 +332,8 @@
           "Statement": [
             {
               "Action": [
-                "s3:*"
+                "s3:*",
+                "sns:*"
               ],
               "Effect": "Allow",
               "Resource": "*"

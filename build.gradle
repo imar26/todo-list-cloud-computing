@@ -54,6 +54,7 @@ dependencies {
     compile('com.google.guava:guava:+')
     compile('org.apache.httpcomponents:httpclient:+')
     compile('com.google.code.gson:gson:+')
+    compile('com.amazonaws:aws-java-sdk-sns:+')
 
 
     runtime('org.springframework.boot:spring-boot-devtools')
