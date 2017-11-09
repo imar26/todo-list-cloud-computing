@@ -129,7 +129,7 @@
           "sudo apt-get update\n",
           "sudo apt-get install openjdk-8-jdk -y\n",
           "sudo apt-get install tomcat8 -y\n",
-          "sudo service tomcat8 start\n",        
+          "sudo service tomcat8 start\n",
           "sudo apt-get update\n",
           "sudo apt-get install ruby -y\n",
           "sudo apt-get install wget\n",
@@ -157,9 +157,9 @@
           "chmod 777 -R /tmp\n",
           "chmod 777 /var/lib/tomcat8\n",
           "chmod 777 /var/lib/tomcat8/webapps"
-            ]
-          ]
-         }
+        ]
+        ]
+        }
         }
       }
     },
@@ -303,7 +303,6 @@
           "Ref": "SNSName"
         }
       }
-
     },
     "ResourceRecords": {
       "Type": "AWS::Route53::RecordSet",
