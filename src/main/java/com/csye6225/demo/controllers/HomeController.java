@@ -247,12 +247,12 @@ public class HomeController {
             jsonObject.addProperty("message", "Please Enter username");
         }else{
             User user = userService.findByUserName(userName);
-            System.out.println("user is"+user.getUserName());
+            //System.out.println("user is"+user.getUserName());
             if (user == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 jsonObject.addProperty("message", "Please Enter Valid User Name");
             } else {
-                System.out.println("Reach 1");
+                //System.out.println("Reach 1");
                 AmazonSNSClient snsClient = new AmazonSNSClient(new InstanceProfileCredentialsProvider());
 
                 snsClient.setRegion(Region.getRegion(Regions.US_EAST_1));
