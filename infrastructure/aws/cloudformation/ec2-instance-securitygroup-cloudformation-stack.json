@@ -91,11 +91,54 @@
     },
     "LogRolePolicyName": {
       "Type": "String"
+    },
+    "AlarmNotificationTopicName": {
+      "Type": "String"
     }
   },
   "Resources": {
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "packages": {
+              "yum": {
+                "httpd": []
+              }
+            },
+            "files": {
+              "/tmp/cwlogs/apacheaccess.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[general]\n",
+                      "state_file= /var/awslogs/agent-state\n",
+                      "[/var/log/httpd/access_log]\n",
+                      "file = /var/log/httpd/access_log\n",
+                      "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                      "log_stream_name = {instance_id}/apache.log\n",
+                      "datetime_format = %d/%b/%Y:%H:%M:%S"
+                    ]
+                  ]
+                },
+                "mode": "000400",
+                "owner": "apache",
+                "group": "apache"
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "httpd": {
+                  "enabled": "true",
+                  "ensureRunning": "true"
+                }
+              }
+            }
+          }
+        }
+      },
       "Properties": {
         "ImageId": {
           "Ref": "ImageId"
@@ -166,6 +209,52 @@
         ]
         ]
         }
+        }
+      }
+    },
+    "WebServerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 7
+      }
+    },
+    "404MetricFilter": {
+      "Type": "AWS::Logs::MetricFilter",
+      "Properties": {
+        "LogGroupName": {
+          "Ref": "WebServerLogGroup"
+        },
+        "FilterPattern": "[ip, identity, user_id, timestamp, request, status_code = 404, size]",
+        "MetricTransformations": [
+          {
+            "MetricValue": "1",
+            "MetricNamespace": "test/404s",
+            "MetricName": "test404Count"
+          }
+        ]
+      }
+    },
+    "BytesTransferredMetricFilter": {
+      "Type": "AWS::Logs::MetricFilter",
+      "Properties": {
+        "LogGroupName": {
+          "Ref": "WebServerLogGroup"
+        },
+        "FilterPattern": "[ip, identity, user_id, timestamp, request, status_code, size]",
+        "MetricTransformations": [
+          {
+            "MetricValue": "$size",
+            "MetricNamespace": "test/BytesTransferred",
+            "MetricName": "testBytesTransferred"
+          }
+        ]
+      }
+    },
+    "AlarmNotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties" : {
+        "TopicName": {
+          "Ref": "AlarmNotificationTopicName"
         }
       }
     },
@@ -415,6 +504,14 @@
           "Ref": "CodeDeployEC2ServiceRole",
           "Ref": "LogRole"
         } ]
+      }
+    }
+  },
+  "Outputs": {
+    "CloudWatchLogGroupName": {
+      "Description": "The name of the CloudWatch log group",
+      "Value": {
+        "Ref": "WebServerLogGroup"
       }
     }
   }
