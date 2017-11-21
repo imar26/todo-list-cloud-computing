@@ -205,7 +205,29 @@
           "chown tomcat8:tomcat8 /usr/share/tomcat8/bin/setenv.sh\n",
           "chmod 777 -R /tmp\n",
           "chmod 777 /var/lib/tomcat8\n",
-          "chmod 777 /var/lib/tomcat8/webapps"
+          "chmod 777 /var/lib/tomcat8/webapps\n",
+          "sudo apt-get update -y\n",
+          "sudo apt-get install python\n",
+          "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n",
+          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/var/awslogs/etc/awslogs.conf\n",
+          "echo '[Unit]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Description=Service for CloudWatch Logs agent' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'After=rc-local.service' >> /etc/systemd/system/awslogs.service \n",
+          "echo '' >> /etc/systemd/system/awslogs.service \n",
+          "echo '[Service]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Type=simple' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Restart=always' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'KillMode=process' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'TimeoutSec=infinity' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'PIDFile=/var/awslogs/state/awslogs.pid' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'ExecStart=/var/awslogs/bin/awslogs-agent-launcher.sh --start --background --pidfile $PIDFILE --user awslogs --chuid awslogs &amp;' >> /etc/systemd/system/awslogs.service \n",
+          "echo '' >> /etc/systemd/system/awslogs.service \n",
+          "echo '[Install]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/awslogs.service \n",
+          "cd /etc/systemd/system\n",
+          "sudo systemctl start awslogs.service\n",
+          "sudo systemctl stop awslogs.service\n",
+          "sudo systemctl restart awslogs.service\n"
         ]
         ]
         }
