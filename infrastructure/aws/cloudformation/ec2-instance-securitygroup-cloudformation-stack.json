@@ -167,7 +167,8 @@
           "sudo apt-get install python -y\n",
           "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n",
           "echo ' ' >> /home/ubuntu/awslogs.conf\n",
-          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/home/ubuntu/awslogs.conf"
+          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/home/ubuntu/awslogs.conf\n",
+          "sudo rm /home/ubuntu/awslogs.conf"
         ]
         ]
         }

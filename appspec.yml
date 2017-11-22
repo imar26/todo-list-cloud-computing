@@ -11,7 +11,7 @@ files:
   - source: ./build/libs/ROOT.war
     destination: /var/lib/tomcat8/webapps
   - source: ./infrastructure/aws/cloudwatch/awslogs.conf
-    destination: /var/awslogs/etc
+    destination: /home/ubuntu
 
 hooks:
   AfterInstall:
