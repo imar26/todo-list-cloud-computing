@@ -85,11 +85,60 @@
     },
     "TagValue": {
       "Type": "String"
+    },
+    "LogRoleName": {
+      "Type": "String"
+    },
+    "LogRolePolicyName": {
+      "Type": "String"
+    },
+    "AlarmNotificationTopicName": {
+      "Type": "String"
     }
   },
   "Resources": {
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "packages": {
+              "yum": {
+                "httpd": []
+              }
+            },
+            "files": {
+              "/tmp/cwlogs/apacheaccess.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[general]\n",
+                      "state_file= /var/awslogs/agent-state\n",
+                      "[/var/log/httpd/access_log]\n",
+                      "file = /var/log/httpd/access_log\n",
+                      "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                      "log_stream_name = {instance_id}/apache.log\n",
+                      "datetime_format = %d/%b/%Y:%H:%M:%S"
+                    ]
+                  ]
+                },
+                "mode": "000400",
+                "owner": "apache",
+                "group": "apache"
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "httpd": {
+                  "enabled": "true",
+                  "ensureRunning": "true"
+                }
+              }
+            }
+          }
+        }
+      },
       "Properties": {
         "ImageId": {
           "Ref": "ImageId"
@@ -156,10 +205,79 @@
           "chown tomcat8:tomcat8 /usr/share/tomcat8/bin/setenv.sh\n",
           "chmod 777 -R /tmp\n",
           "chmod 777 /var/lib/tomcat8\n",
-          "chmod 777 /var/lib/tomcat8/webapps"
+          "chmod 777 /var/lib/tomcat8/webapps\n",
+          "sudo apt-get update -y\n",
+          "sudo apt-get install python\n",
+          "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n",
+          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/var/awslogs/etc/awslogs.conf\n",
+          "echo '[Unit]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Description=Service for CloudWatch Logs agent' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'After=rc-local.service' >> /etc/systemd/system/awslogs.service \n",
+          "echo '' >> /etc/systemd/system/awslogs.service \n",
+          "echo '[Service]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Type=simple' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'Restart=always' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'KillMode=process' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'TimeoutSec=infinity' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'PIDFile=/var/awslogs/state/awslogs.pid' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'ExecStart=/var/awslogs/bin/awslogs-agent-launcher.sh --start --background --pidfile $PIDFILE --user awslogs --chuid awslogs &amp;' >> /etc/systemd/system/awslogs.service \n",
+          "echo '' >> /etc/systemd/system/awslogs.service \n",
+          "echo '[Install]' >> /etc/systemd/system/awslogs.service \n",
+          "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/awslogs.service \n",
+          "cd /etc/systemd/system\n",
+          "sudo systemctl start awslogs.service\n",
+          "sudo systemctl stop awslogs.service\n",
+          "sudo systemctl restart awslogs.service\n",
+          "sudo systemctl enable awslogs.service"
         ]
         ]
         }
+        }
+      }
+    },
+    "WebServerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 7
+      }
+    },
+    "404MetricFilter": {
+      "Type": "AWS::Logs::MetricFilter",
+      "Properties": {
+        "LogGroupName": {
+          "Ref": "WebServerLogGroup"
+        },
+        "FilterPattern": "[ip, identity, user_id, timestamp, request, status_code = 404, size]",
+        "MetricTransformations": [
+          {
+            "MetricValue": "1",
+            "MetricNamespace": "test/404s",
+            "MetricName": "test404Count"
+          }
+        ]
+      }
+    },
+    "BytesTransferredMetricFilter": {
+      "Type": "AWS::Logs::MetricFilter",
+      "Properties": {
+        "LogGroupName": {
+          "Ref": "WebServerLogGroup"
+        },
+        "FilterPattern": "[ip, identity, user_id, timestamp, request, status_code, size]",
+        "MetricTransformations": [
+          {
+            "MetricValue": "$size",
+            "MetricNamespace": "test/BytesTransferred",
+            "MetricName": "testBytesTransferred"
+          }
+        ]
+      }
+    },
+    "AlarmNotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties" : {
+        "TopicName": {
+          "Ref": "AlarmNotificationTopicName"
         }
       }
     },
@@ -343,6 +461,30 @@
         "ManagedPolicyName": {"Ref": "CodeDeployEC2S3"}
       }
     },
+    "LogRolePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "logs:Create*",
+                "logs:PutLogEvents",
+                "logs:DescribeLogStreams",
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*",
+                "arn:aws:s3:::*"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyName": {"Ref": "LogRolePolicyName"}
+      }
+    },
     "CodeDeployEC2ServiceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -360,13 +502,39 @@
         "RoleName": {"Ref": "MyCodeDeployEC2ServiceRole"}
       }
     },
+    "LogRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "ec2.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
+        "ManagedPolicyArns": [{"Ref": "LogRolePolicy"}],
+        "RoleName": {"Ref": "LogRoleName"}
+      }
+    },
     "CodeDeployServiceRoleInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
         "Roles": [ {
-          "Ref": "CodeDeployEC2ServiceRole"
+          "Ref": "CodeDeployEC2ServiceRole",
+          "Ref": "LogRole"
         } ]
+      }
+    }
+  },
+  "Outputs": {
+    "CloudWatchLogGroupName": {
+      "Description": "The name of the CloudWatch log group",
+      "Value": {
+        "Ref": "WebServerLogGroup"
       }
     }
   }
