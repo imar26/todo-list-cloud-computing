@@ -99,46 +99,6 @@
   "Resources": {
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
-      "Metadata": {
-        "AWS::CloudFormation::Init": {
-          "config": {
-            "packages": {
-              "yum": {
-                "httpd": []
-              }
-            },
-            "files": {
-              "/tmp/cwlogs/apacheaccess.conf": {
-                "content": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "[general]\n",
-                      "state_file= /var/awslogs/agent-state\n",
-                      "[/var/log/httpd/access_log]\n",
-                      "file = /var/log/httpd/access_log\n",
-                      "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                      "log_stream_name = {instance_id}/apache.log\n",
-                      "datetime_format = %d/%b/%Y:%H:%M:%S"
-                    ]
-                  ]
-                },
-                "mode": "000400",
-                "owner": "apache",
-                "group": "apache"
-              }
-            },
-            "services": {
-              "sysvinit": {
-                "httpd": {
-                  "enabled": "true",
-                  "ensureRunning": "true"
-                }
-              }
-            }
-          }
-        }
-      },
       "Properties": {
         "ImageId": {
           "Ref": "ImageId"
@@ -204,30 +164,32 @@
           "chmod +x /usr/share/tomcat8/bin/setenv.sh\n",
           "chown tomcat8:tomcat8 /usr/share/tomcat8/bin/setenv.sh\n",
           "chmod 777 -R /tmp\n",
-          "chmod 777 /var/lib/tomcat8\n",
+          "chmod 777 /var/lib/tomcat8 \n",
           "chmod 777 /var/lib/tomcat8/webapps\n",
-          "sudo apt-get update -y\n",
-          "sudo apt-get install python\n",
-          "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n",
-          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/var/awslogs/etc/awslogs.conf\n",
-          "echo '[Unit]' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'Description=Service for CloudWatch Logs agent' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'After=rc-local.service' >> /etc/systemd/system/awslogs.service \n",
-          "echo '' >> /etc/systemd/system/awslogs.service \n",
-          "echo '[Service]' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'Type=simple' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'Restart=always' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'KillMode=process' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'TimeoutSec=infinity' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'PIDFile=/var/awslogs/state/awslogs.pid' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'ExecStart=/var/awslogs/bin/awslogs-agent-launcher.sh --start --background --pidfile $PIDFILE --user awslogs --chuid awslogs &amp;' >> /etc/systemd/system/awslogs.service \n",
-          "echo '' >> /etc/systemd/system/awslogs.service \n",
-          "echo '[Install]' >> /etc/systemd/system/awslogs.service \n",
-          "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/awslogs.service \n",
-          "cd /etc/systemd/system\n",
-          "sudo systemctl start awslogs.service\n",
-          "sudo systemctl stop awslogs.service\n",
-          "sudo systemctl restart awslogs.service\n"
+          "sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'\n",
+          "sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'\n",
+          "sudo apt-get -y install mysql-server\n",
+          "sudo service mysql start\n",
+          "echo '[Unit]' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'Description=The CloudWatch Logs agent' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'After=rc-local.service' >> /etc/systemd/system/awslogs.service\n",
+          "echo '' >> /etc/systemd/system/awslogs.service\n",
+          "echo '[Service]' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'Type=simple' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'Restart=always' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'KillMode=process' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'TimeoutSec=infinity' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'PIDFile=/var/awslogs/state/awslogs.pid' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'ExecStart=/var/awslogs/bin/awslogs-agent-launcher.sh --start --background --pidfile $PIDFILE --user awslogs --chuid awslogs &' >> /etc/systemd/system/awslogs.service\n",
+          "echo '' >> /etc/systemd/system/awslogs.service\n",
+          "echo '[Install]' >> /etc/systemd/system/awslogs.service\n",
+          "echo 'WantedBy=multi-user.target' >> /etc/systemd/system/awslogs.service\n",
+          "chmod +x /etc/systemd/system/awslogs.service\n",
+          "echo '' >> /home/ubuntu/awslogs.conf\n",
+          "chmod +x /home/ubuntu/awslogs.conf\n",
+          "sudo wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py\n",
+          "sudo python ./awslogs-agent-setup.py --region us-east-1 --non-interactive --configfile=/home/ubuntu/awslogs.conf\n",
+          "sudo rm /home/ubuntu/awslogs.conf\n"
         ]
         ]
         }
