@@ -43,7 +43,7 @@ Run Delete Cloud Formation Stack: ./delete-csye6225-cloudformation-stack.sh {Buc
 
 Ssh to the EC2 instance: ssh ubuntu@{Public IP of EC2 Instance}
 
-Commands to run: sudo apt-get update
+Commands to run: sudo apt-get update 
                  sudo apt-get install openjdk-8-jdk -y
                  
 ##Install and start Tomcat8 on EC2 instance
