@@ -19,5 +19,5 @@ hooks:
      timeout: 180
      runas: ubuntu
    - location: ./restartCloudWatch.sh
-     timeout: 180
+     timeout: 360
      runas: ubuntu
