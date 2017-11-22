@@ -227,7 +227,8 @@
           "cd /etc/systemd/system\n",
           "sudo systemctl start awslogs.service\n",
           "sudo systemctl stop awslogs.service\n",
-          "sudo systemctl restart awslogs.service\n"
+          "sudo systemctl restart awslogs.service\n",
+          "sudo systemctl enable awslogs.service"
         ]
         ]
         }
