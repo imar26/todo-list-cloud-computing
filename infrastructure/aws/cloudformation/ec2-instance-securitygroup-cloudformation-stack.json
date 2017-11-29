@@ -483,7 +483,7 @@
     "LoadBalancer": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
-        "Name": "CSYE6225LoadBalancerANNC",
+        "Name": "csye6225LoadBalancer",
         "Scheme": "internet-facing",
         "Subnets": [{
           "Ref": "SubnetId"
