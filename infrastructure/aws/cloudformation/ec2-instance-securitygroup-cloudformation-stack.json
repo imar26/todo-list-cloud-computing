@@ -184,8 +184,14 @@
         "AvailabilityZones" : { "Fn::GetAZs" : "us-east-1"},
         "LaunchConfigurationName" : { "Ref" : "AutoScalingConfig" },
         "MinSize" : "3",
-        "MaxSize" : "3"
-
+        "MaxSize" : "3",
+        "Tags": [
+          {
+            "TagKey" : { "Ref": "LoadBalancer" },
+            "TagValue" : { "Ref": "LoadBalancer" },
+            "PropagateAtLaunch" : true
+          }
+        ]
       }
     },
     "WebServerSecurityGroup": {
