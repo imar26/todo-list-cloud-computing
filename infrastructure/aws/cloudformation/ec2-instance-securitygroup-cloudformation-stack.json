@@ -485,12 +485,14 @@
       "Properties": {
         "Name": "csye6225LoadBalancer",
         "Scheme": "internet-facing",
-        "Subnets": [{
-          "Ref": "SubnetId"
-        },
+        "Subnets": [
+          {
+            "Ref": "SubnetId"
+          },
           {
             "Ref": "SubnetId2"
-          }],
+          }
+        ],
         "SecurityGroups": [{
           "Fn::GetAtt": [
             "LoadBalancerSecurityGroup",
@@ -524,14 +526,11 @@
         "Name": {
           "Ref": "Name"
         },
-        "ResourceRecords": [{
-          "Fn::GetAtt": [
-            "EC2Instance",
-            "PublicIp"
-          ]
-        }],
-        "TTL": "60",
-        "Type": "A"
+        "Type": "A",
+        "AliasTarget": {
+          "DNSName" : { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]},
+          "HostedZoneId" : { "Fn::GetAtt" : [ "LoadBalancer", "CanonicalHostedZoneID" ]}
+        }
       }
     },
     "IAMPolicyCodeDeployEC2S3": {
