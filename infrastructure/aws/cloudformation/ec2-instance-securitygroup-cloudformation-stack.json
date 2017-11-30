@@ -187,7 +187,7 @@
         "MaxSize" : "3",
         "Tags": [
           {
-            "PropagateAtLaunch" : true
+            "PropagateAtLaunch" : true,
             "Key": {"Ref": "TagKey"},
             "Value": {"Ref": "TagValue"}
           }
