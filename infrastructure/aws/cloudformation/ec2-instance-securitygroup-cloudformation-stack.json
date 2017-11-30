@@ -91,6 +91,15 @@
     },
     "LogRolePolicyName": {
       "Type": "String"
+    },
+    "DomainName": {
+      "Type": "String"
+    },
+    "TargetGroupName": {
+      "Type": "String"
+    },
+    "CertificateArn": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -501,6 +510,32 @@
         }],
         "Type": "application",
         "IpAddressType": "ipv4"
+      }
+    },
+    "Listener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [{
+          "Type": "forward",
+          "TargetGroupArn": { "Ref": "ALBTargetGroup" }
+        }],
+        "LoadBalancerArn": { "Ref": "LoadBalancer" },
+        "Port": "443",
+        "Protocol": "HTTPS",
+        "Certificates": [{
+          "CertificateArn": { "Ref": "CertificateArn" }
+        }]
+      }
+    },
+    "ALBTargetGroup" : {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "Name" : { "Ref": "TargetGroupName" },
+        "Port" : "443",
+        "Protocol" : "HTTPS",
+        "VpcId": {
+          "Ref": "VpcId"
+        }
       }
     },
     "S3Bucket": {
