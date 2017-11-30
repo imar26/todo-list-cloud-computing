@@ -187,9 +187,9 @@
         "MaxSize" : "3",
         "Tags": [
           {
-            "TagKey" : { "Ref": "LoadBalancer" },
-            "TagValue" : { "Ref": "LoadBalancer" },
             "PropagateAtLaunch" : true
+            "Key": {"Ref": "TagKey"},
+            "Value": {"Ref": "TagValue"}
           }
         ]
       }
