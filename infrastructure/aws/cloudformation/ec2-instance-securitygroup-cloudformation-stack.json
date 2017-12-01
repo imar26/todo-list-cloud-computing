@@ -183,6 +183,7 @@
       "Properties" : {
         "AvailabilityZones" : { "Fn::GetAZs" : "us-east-1"},
         "LaunchConfigurationName" : { "Ref" : "AutoScalingConfig" },
+        "TargetGroupARNs" : [{ "Ref": "ALBTargetGroup" }],
         "MinSize" : "3",
         "MaxSize" : "3",
         "Tags": [
@@ -412,7 +413,8 @@
         "Type": "A",
         "AliasTarget": {
           "DNSName" : { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]},
-          "HostedZoneId" : { "Fn::GetAtt" : [ "LoadBalancer", "CanonicalHostedZoneID" ]}
+          "HostedZoneId" : { "Fn::GetAtt" : [ "LoadBalancer", "CanonicalHostedZoneID" ]},
+          "EvaluateTargetHealth" : true
         }
       }
     },
