@@ -181,7 +181,14 @@
     "MyAutoScalingGroup" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "Properties" : {
-        "AvailabilityZones" : { "Fn::GetAZs" : "us-east-1"},
+        "VPCZoneIdentifier" : [
+          {
+            "Ref": "SubnetId"
+          },
+          {
+            "Ref": "SubnetId2"
+          }
+        ],
         "LaunchConfigurationName" : { "Ref" : "AutoScalingConfig" },
         "TargetGroupARNs" : [{ "Ref": "ALBTargetGroup" }],
         "MinSize" : "3",
