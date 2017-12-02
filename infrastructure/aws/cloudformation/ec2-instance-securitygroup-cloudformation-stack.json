@@ -397,6 +397,9 @@
         "Name" : { "Ref": "TargetGroupName" },
         "Port" : "8080",
         "HealthCheckPort": "8080",
+        "Matcher":{
+          "HttpCode" : "401,200"
+        },
         "Protocol" : "HTTP",
         "VpcId": {
           "Ref": "VpcId"
