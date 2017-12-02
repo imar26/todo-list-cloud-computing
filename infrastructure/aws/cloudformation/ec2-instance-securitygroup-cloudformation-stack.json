@@ -388,6 +388,8 @@
       "Properties" : {
         "Name" : { "Ref": "TargetGroupName" },
         "Port" : "443",
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": "8080",
         "Protocol" : "HTTPS",
         "VpcId": {
           "Ref": "VpcId"
