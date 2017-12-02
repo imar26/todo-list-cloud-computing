@@ -342,6 +342,14 @@
           "FromPort": "443",
           "ToPort": "443",
           "CidrIp": "0.0.0.0/0"
+        }],
+        "SecurityGroupEgress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "DestinationSecurityGroupId": {
+            "Fn::GetAtt": ["WebServerSecurityGroup", "GroupId"]
+          }
         }]
       }
     },
@@ -388,7 +396,6 @@
       "Properties" : {
         "Name" : { "Ref": "TargetGroupName" },
         "Port" : "8080",
-        "HealthCheckProtocol": "HTTP",
         "HealthCheckPort": "8080",
         "Protocol" : "HTTP",
         "VpcId": {
