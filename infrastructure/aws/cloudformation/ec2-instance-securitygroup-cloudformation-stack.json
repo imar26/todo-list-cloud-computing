@@ -91,11 +91,20 @@
     },
     "LogRolePolicyName": {
       "Type": "String"
+    },
+    "DomainName": {
+      "Type": "String"
+    },
+    "TargetGroupName": {
+      "Type": "String"
+    },
+    "CertificateArn": {
+      "Type": "String"
     }
   },
   "Resources": {
-    "EC2Instance": {
-      "Type": "AWS::EC2::Instance",
+    "AutoScalingConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
         "ImageId": {
           "Ref": "ImageId"
@@ -103,19 +112,16 @@
         "InstanceType": {
           "Ref": "InstanceType"
         },
-        "DisableApiTermination": "false",
-        "SecurityGroupIds": [{
-          "Fn::GetAtt": [
-            "WebServerSecurityGroup",
-            "GroupId"
-          ]
-        }],
+
+        "SecurityGroups" : [ {
+          "Ref" : "WebServerSecurityGroup"
+        }
+        ],
+
         "KeyName": {
           "Ref": "KeyName"
         },
-        "SubnetId": {
-          "Ref": "SubnetId"
-        },
+
         "BlockDeviceMappings": [{
           "DeviceName": "/dev/sdf",
           "Ebs": {
@@ -123,12 +129,7 @@
             "VolumeType": "gp2"
           }
         }],
-        "Tags": [
-          {
-            "Key": {"Ref": "TagKey"},
-            "Value": {"Ref": "TagValue"}
-          }
-        ],
+
         "IamInstanceProfile": {"Ref": "CodeDeployServiceRoleInstanceProfile"},
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/bash\n",
@@ -173,6 +174,32 @@
         ]
         }
         }
+      }
+    },
+
+
+    "MyAutoScalingGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "VPCZoneIdentifier" : [
+          {
+            "Ref": "SubnetId"
+          },
+          {
+            "Ref": "SubnetId2"
+          }
+        ],
+        "LaunchConfigurationName" : { "Ref" : "AutoScalingConfig" },
+        "TargetGroupARNs" : [{ "Ref": "ALBTargetGroup" }],
+        "MinSize" : "3",
+        "MaxSize" : "3",
+        "Tags": [
+          {
+            "PropagateAtLaunch" : true,
+            "Key": {"Ref": "TagKey"},
+            "Value": {"Ref": "TagValue"}
+          }
+        ]
       }
     },
     "WebServerSecurityGroup": {
@@ -302,6 +329,73 @@
         }
       }
     },
+    "LoadBalancerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Load Balancer Security Group",
+        "GroupName":"LoadBalancerGroupSecurity",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupIngress": [{
+          "IpProtocol": "tcp",
+          "FromPort": "443",
+          "ToPort": "443",
+          "CidrIp": "0.0.0.0/0"
+        }]
+      }
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "csye6225LoadBalancer",
+        "Scheme": "internet-facing",
+        "Subnets": [
+          {
+            "Ref": "SubnetId"
+          },
+          {
+            "Ref": "SubnetId2"
+          }
+        ],
+        "SecurityGroups": [{
+          "Fn::GetAtt": [
+            "LoadBalancerSecurityGroup",
+            "GroupId"
+          ]
+        }],
+        "Type": "application",
+        "IpAddressType": "ipv4"
+      }
+    },
+    "Listener": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [{
+          "Type": "forward",
+          "TargetGroupArn": { "Ref": "ALBTargetGroup" }
+        }],
+        "LoadBalancerArn": { "Ref": "LoadBalancer" },
+        "Port": "443",
+        "Protocol": "HTTPS",
+        "Certificates": [{
+          "CertificateArn": { "Ref": "CertificateArn" }
+        }]
+      }
+    },
+    "ALBTargetGroup" : {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "Name" : { "Ref": "TargetGroupName" },
+        "Port" : "8080",
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckPort": "8080",
+        "Protocol" : "HTTP",
+        "VpcId": {
+          "Ref": "VpcId"
+        }
+      }
+    },
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -325,14 +419,12 @@
         "Name": {
           "Ref": "Name"
         },
-        "ResourceRecords": [{
-          "Fn::GetAtt": [
-            "EC2Instance",
-            "PublicIp"
-          ]
-        }],
-        "TTL": "60",
-        "Type": "A"
+        "Type": "A",
+        "AliasTarget": {
+          "DNSName" : { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]},
+          "HostedZoneId" : { "Fn::GetAtt" : [ "LoadBalancer", "CanonicalHostedZoneID" ]},
+          "EvaluateTargetHealth" : true
+        }
       }
     },
     "IAMPolicyCodeDeployEC2S3": {
