@@ -387,10 +387,10 @@
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
       "Properties" : {
         "Name" : { "Ref": "TargetGroupName" },
-        "Port" : "443",
+        "Port" : "8080",
         "HealthCheckProtocol": "HTTP",
         "HealthCheckPort": "8080",
-        "Protocol" : "HTTPS",
+        "Protocol" : "HTTP",
         "VpcId": {
           "Ref": "VpcId"
         }
