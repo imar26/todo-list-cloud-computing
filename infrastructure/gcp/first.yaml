@@ -13,3 +13,18 @@ resources:
         sourceImage: projects/debian-cloud/global/images/family/debian-8
     networkInterfaces:
     - network: global/networks/default
+
+- name: a-firewall-rule
+  type: compute.v1.firewall
+  properties:
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["80","443","22"]
+
+- name: csye6225-resourceRecordSet
+  type: dns.v1.resourceRecordSet
+  properties:
+    type: TXT
+    ttl: 60
+    rrdatas: ['csye6225']
