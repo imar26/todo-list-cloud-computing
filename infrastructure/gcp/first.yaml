@@ -21,10 +21,3 @@ resources:
     allowed:
     - IPProtocol: TCP
       ports: ["80","443","22"]
-
-- name: csye6225-resourceRecordSet
-  type: dns.v1.resourceRecordSet
-  properties:
-    type: TXT
-    ttl: 60
-    rrdatas: ['csye6225']
