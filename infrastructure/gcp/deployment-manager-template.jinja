@@ -30,6 +30,8 @@ resources:
             #!/bin/bash
             sudo apt-get update
             sudo apt-get install openjdk-8-jdk -y
+            sudo apt-get install tomcat8 -y
+            sudo service tomcat8 start
 
 - name: {{ env["name"] }}-igm
   type: compute.v1.instanceGroupManager
