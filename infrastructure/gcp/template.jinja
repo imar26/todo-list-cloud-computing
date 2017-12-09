@@ -14,10 +14,15 @@ resources:
     networkInterfaces:
     - network: global/networks/default
 
-- name: a-firewall-rule
+- name: firewall-rule
   type: compute.v1.firewall
   properties:
     sourceRanges: ["0.0.0.0/0"]
     allowed:
     - IPProtocol: TCP
       ports: ["80","443","22"]
+
+- name: password_reset
+  type: pubsub.v1.topic
+  properties:
+    topic: password_reset
