@@ -1,2 +1,1 @@
-gcloud deployment-manager deployments create firstdeploy \
-   --template template.jinja
+gcloud deployment-manager deployments create finalpresentation --config deployment-manager.yaml

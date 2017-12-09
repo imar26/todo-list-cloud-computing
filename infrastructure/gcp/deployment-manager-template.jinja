@@ -1,0 +1,79 @@
+{% set FIREWALL = env["deployment"] + "-application-fw" %}
+{% set APPLICATION_PORT = 8080 %}
+{% set REGION = properties["zone"][:properties["zone"].rfind("-")] %}
+{% set IT_NAME = env['name'] + '-it' %}
+
+resources:
+- name: {{ IT_NAME }}
+  type: compute.v1.instanceTemplate
+  properties:
+    properties:
+      machineType: f1-micro
+      disks:
+      - deviceName: boot
+        boot: true
+        autoDelete: true
+        mode: READ_WRITE
+        type: PERSISTENT
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-8
+      networkInterfaces:
+      - accessConfigs:
+        - name: external-nat
+          type: ONE_TO_ONE_NAT
+        network: https://www.googleapis.com/compute/v1/projects/{{ env['project'] }}/global/networks/default
+
+- name: {{ env["name"] }}-igm
+  type: compute.v1.instanceGroupManager
+  properties:
+    zone: {{ properties['zone'] }}
+    targetSize: {{ properties['size'] }}
+    targetPools:
+      - $(ref.{{ env["name"] }}-tp.selfLink)
+    baseInstanceName: {{ env["name"] }}-instance
+    instanceTemplate: $(ref.{{ env["name"] }}-it.selfLink)
+
+- name: {{ env["name"] }}-as
+  type: compute.v1.autoscaler
+  properties:
+    zone: {{ properties['zone'] }}
+    target: $(ref.{{ env['name'] }}-igm.selfLink)
+    autoscalingPolicy:
+      maxNumReplicas: {{ properties['maxSize'] }}
+
+- name: {{ env["name"] }}-hc
+  type: compute.v1.httpHealthCheck
+  properties:
+    port: {{ APPLICATION_PORT }}
+    requestPath: /_ah/health
+
+- name: {{ env["name"] }}-tp
+  type: compute.v1.targetPool
+  properties:
+    region: {{ REGION }}
+    healthChecks:
+      - $(ref.{{ env["name"] }}-hc.selfLink)
+
+- name: {{ env["name"] }}-lb
+  type: compute.v1.forwardingRule
+  properties:
+    region: {{ REGION }}
+    portRange: {{ APPLICATION_PORT }}
+    target: $(ref.{{ env["name"] }}-tp.selfLink)
+
+- name: {{ FIREWALL }}
+  type: compute.v1.firewall
+  properties:
+    allowed:
+      - IPProtocol: TCP
+        ports: [ {{ APPLICATION_PORT }}, 80, 22, 443 ]
+    sourceRanges: [ 0.0.0.0/0 ]
+
+- name: password_reset
+  type: pubsub.v1.topic
+  properties:
+    topic: password_reset
+
+outputs:
+- name: instanceTemplateSelfLink
+  value: $(ref.{{ IT_NAME }}.selfLink)
