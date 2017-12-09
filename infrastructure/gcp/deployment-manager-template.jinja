@@ -74,6 +74,9 @@ resources:
   properties:
     topic: password_reset
 
+- name: myclouddeploymentmanager
+  type: storage.v1.bucket
+
 outputs:
 - name: instanceTemplateSelfLink
   value: $(ref.{{ IT_NAME }}.selfLink)
