@@ -1,0 +1,10 @@
+imports:
+- path: deployment-manager-template.jinja
+
+resources:
+- name: create-instances
+  type: deployment-manager-template.jinja
+  properties:
+    zone: us-east1-c
+    size: 3
+    maxSize: 20

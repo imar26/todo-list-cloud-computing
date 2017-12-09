@@ -1,1 +1,1 @@
-gcloud deployment-manager deployments delete firstdeploy
+gcloud deployment-manager deployments delete finalpresentation
