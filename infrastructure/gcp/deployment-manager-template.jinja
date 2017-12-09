@@ -97,6 +97,45 @@ resources:
 - name: myclouddeploymentmanager
   type: storage.v1.bucket
 
+- name: {{ env["name"] }}-instance-3
+  type: gcp-types/sqladmin-v1beta4:instances
+  properties:
+   backendType: SECOND_GEN
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-3
+   databaseVersion: MYSQL_5_6
+   region: us-central1
+   instanceType: CLOUD_SQL_INSTANCE
+   kind: sql#instance
+   project: {{ env["project"] }}
+   settings:
+    tier: db-n1-standard-1
+    ipConfiguration:
+     authorizedNetworks:
+      - kind: sql#aclEntry
+        value: 0.0.0.0/0
+
+- name: rds-database
+  type: gcp-types/sqladmin-v1beta4:databases
+  properties:
+   instance: $(ref.{{ env["name"] }}-instance-3.name)
+   charset: utf8
+   name: csye6225
+
+- name: rds-user
+  action: gcp-types/sqladmin-v1beta4:sql.users.insert
+  metadata:
+   runtimePolicy:
+   - CREATE
+   dependsOn:
+   - rds-database
+  properties:
+   name: dbuser
+   password: dbpassword
+   instance: $(ref.{{ env["name"] }}-instance-3.name)
+   project: {{ env["project"] }}
+   host: "%"
+
 outputs:
 - name: instanceTemplateSelfLink
   value: $(ref.{{ IT_NAME }}.selfLink)
+
