@@ -1,8 +1,10 @@
 {% set FIREWALL = env["deployment"] + "-application-fw" %}
 {% set APPLICATION_PORT = 8080 %}
+{% set HTTPS_PORT = 443 %}
 {% set LOADBALANCER_SERVICE = env["deployment"] + "-load-balancer-service" %}
 {% set REGION = properties["zone"][:properties["zone"].rfind("-")] %}
 {% set IT_NAME = env['name'] + '-it' %}
+{% set SSL_CERTIFICATE = "/projects/" + env["project"] + "/global/sslCertificates/" + properties['sslCertificate'] %}
 
 resources:
 - name: {{ IT_NAME }}
@@ -89,6 +91,33 @@ resources:
         group: $(ref.{{ env["name"] }}-igm.instanceGroup)
     healthChecks: [ $(ref.{{ env["name"] }}-hc.selfLink) ]
 
+- name: {{ env["name"] }}-urlmap
+  type: compute.v1.urlMap
+  properties:
+    defaultService: $(ref.{{ env["name"] }}-bes.selfLink)
+    hostRules:
+      - hosts: ["*"]
+        pathMatcher: pathmap
+    pathMatchers:
+      - name: pathmap
+        defaultService: $(ref.{{ env["name"] }}-bes.selfLink)
+        pathRules:
+          - paths: ["/static", "/static/*"]
+            service: $(ref.{{ env["name"] }}-bes.selfLink)
+
+- name: {{ env["name"] }}-targetproxy
+  type: compute.v1.targetHttpsProxy
+  properties:
+    urlMap: $(ref.{{ env["name"] }}-urlmap.selfLink)
+    sslCertificates: [ {{ SSL_CERTIFICATE }} ]
+
+- name: {{ env["name"] }}-global-forwarding-rule
+  type: compute.v1.globalForwardingRule
+  properties:
+    IPProtocol: TCP
+    portRange: {{ HTTPS_PORT }}
+    target: $(ref.{{ env["name"] }}-targetproxy.selfLink)
+
 - name: password_reset
   type: pubsub.v1.topic
   properties:
@@ -97,13 +126,13 @@ resources:
 - name: myclouddeploymentmanager
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-3
+- name: {{ env["name"] }}-instance-1
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-3
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-1
    databaseVersion: MYSQL_5_6
-   region: us-central1
+   region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
    kind: sql#instance
    project: {{ env["project"] }}
@@ -117,7 +146,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-3.name)
+   instance: $(ref.{{ env["name"] }}-instance-1.name)
    charset: utf8
    name: csye6225
 
@@ -131,7 +160,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-3.name)
+   instance: $(ref.{{ env["name"] }}-instance-1.name)
    project: {{ env["project"] }}
    host: "%"
 
