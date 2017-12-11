@@ -51,6 +51,7 @@ resources:
     zone: {{ properties['zone'] }}
     target: $(ref.{{ env['name'] }}-igm.selfLink)
     autoscalingPolicy:
+      minNumReplicas: {{ properties['size'] }}
       maxNumReplicas: {{ properties['maxSize'] }}
 
 - name: {{ env["name"] }}-hc
@@ -95,15 +96,6 @@ resources:
   type: compute.v1.urlMap
   properties:
     defaultService: $(ref.{{ env["name"] }}-bes.selfLink)
-    hostRules:
-      - hosts: ["*"]
-        pathMatcher: pathmap
-    pathMatchers:
-      - name: pathmap
-        defaultService: $(ref.{{ env["name"] }}-bes.selfLink)
-        pathRules:
-          - paths: ["/static", "/static/*"]
-            service: $(ref.{{ env["name"] }}-bes.selfLink)
 
 - name: {{ env["name"] }}-targetproxy
   type: compute.v1.targetHttpsProxy
@@ -126,11 +118,11 @@ resources:
 - name: myclouddeploymentmanager
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-1
+- name: {{ env["name"] }}-instance-107
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-1
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-107
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -146,7 +138,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-1.name)
+   instance: $(ref.{{ env["name"] }}-instance-107.name)
    charset: utf8
    name: csye6225
 
@@ -160,7 +152,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-1.name)
+   instance: $(ref.{{ env["name"] }}-instance-107.name)
    project: {{ env["project"] }}
    host: "%"
 

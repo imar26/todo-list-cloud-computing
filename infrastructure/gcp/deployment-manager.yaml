@@ -7,5 +7,5 @@ resources:
   properties:
     zone: us-east1-c
     size: 3
-    maxSize: 3
+    maxSize: 30
     sslCertificate: mysslcertificate
