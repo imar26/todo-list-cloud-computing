@@ -35,15 +35,13 @@ resources:
             sudo apt-get install tomcat8 -y
             sudo service tomcat8 start
       tags:
-        items: [http-server]
+        items: ["http-server"]
 
 - name: {{ env["name"] }}-igm
   type: compute.v1.instanceGroupManager
   properties:
     zone: {{ properties['zone'] }}
     targetSize: {{ properties['size'] }}
-    targetPools:
-      - $(ref.{{ env["name"] }}-tp.selfLink)
     baseInstanceName: {{ env["name"] }}-instance
     instanceTemplate: $(ref.{{ env["name"] }}-it.selfLink)
 
@@ -61,20 +59,6 @@ resources:
   properties:
     port: {{ APPLICATION_PORT }}
 
-- name: {{ env["name"] }}-tp
-  type: compute.v1.targetPool
-  properties:
-    region: {{ REGION }}
-    healthChecks:
-      - $(ref.{{ env["name"] }}-hc.selfLink)
-
-- name: {{ env["name"] }}-lb
-  type: compute.v1.forwardingRule
-  properties:
-    region: {{ REGION }}
-    portRange: {{ APPLICATION_PORT }}
-    target: $(ref.{{ env["name"] }}-tp.selfLink)
-
 - name: {{ FIREWALL }}
   type: compute.v1.firewall
   properties:
@@ -82,6 +66,7 @@ resources:
       - IPProtocol: TCP
         ports: [ {{ APPLICATION_PORT }}, 80, 22, 443 ]
     sourceRanges: [ 0.0.0.0/0 ]
+    targetTags: ["http-server"]
 
 - name: {{ env["name"] }}-bes
   type: compute.v1.backendService
@@ -116,14 +101,14 @@ resources:
   properties:
     topic: password_reset
 
-- name: myclouddeploymentmanager125
+- name: myclouddeploymentmanager134
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-125
+- name: {{ env["name"] }}-instance-134
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-125
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-134
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -139,7 +124,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-125.name)
+   instance: $(ref.{{ env["name"] }}-instance-134.name)
    charset: utf8
    name: csye6225
 
@@ -153,7 +138,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-125.name)
+   instance: $(ref.{{ env["name"] }}-instance-134.name)
    project: {{ env["project"] }}
    host: "%"
 
