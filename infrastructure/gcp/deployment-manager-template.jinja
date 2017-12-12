@@ -11,7 +11,7 @@ resources:
   type: compute.v1.instanceTemplate
   properties:
     properties:
-      machineType: f1-micro
+      machineType: n1-standard-1
       disks:
       - deviceName: boot
         boot: true
@@ -115,14 +115,14 @@ resources:
   properties:
     topic: password_reset
 
-- name: myclouddeploymentmanager
+- name: myclouddeploymentmanager115
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-114
+- name: {{ env["name"] }}-instance-115
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-114
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-115
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -138,7 +138,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-114.name)
+   instance: $(ref.{{ env["name"] }}-instance-115.name)
    charset: utf8
    name: csye6225
 
@@ -152,7 +152,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-114.name)
+   instance: $(ref.{{ env["name"] }}-instance-115.name)
    project: {{ env["project"] }}
    host: "%"
 
