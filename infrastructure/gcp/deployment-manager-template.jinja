@@ -101,14 +101,14 @@ resources:
   properties:
     topic: password_reset
 
-- name: myclouddeploymentmanager134
+- name: myclouddeploymentmanager148
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-134
+- name: {{ env["name"] }}-instance-148
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-134
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-148
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -124,7 +124,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-134.name)
+   instance: $(ref.{{ env["name"] }}-instance-148.name)
    charset: utf8
    name: csye6225
 
@@ -138,7 +138,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-134.name)
+   instance: $(ref.{{ env["name"] }}-instance-148.name)
    project: {{ env["project"] }}
    host: "%"
 
@@ -147,11 +147,6 @@ resources:
   properties:
     dnsName: {{ properties["domain"] }}.
     description: A-zone
-    additions:
-      -resourceRecordSets:
-          name: {{ env["name"] }}-resourceRecordSet
-          type: TXT
-          ttl: 60
 
 outputs:
 - name: instanceTemplateSelfLink
