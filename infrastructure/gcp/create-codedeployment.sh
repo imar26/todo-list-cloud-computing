@@ -9,4 +9,5 @@ export ip=$(gcloud compute forwarding-rules describe create-instances-global-for
 export ip=$(cut -d ":" -f 2 <<< "$ip")
 echo $ip
 gcloud dns record-sets transaction add -z=create-instances-managed-zone --name=$1 --type=A --ttl=60 $ip
+gcloud dns record-sets transaction add -z=create-instances-managed-zone --name=$1 --type=TXT --ttl=60 "csye6225"
 gcloud dns record-sets transaction execute -z=create-instances-managed-zone

@@ -6,5 +6,6 @@ export ip=$(gcloud compute forwarding-rules describe create-instances-global-for
 export ip=$(cut -d ":" -f 2 <<< "$ip")
 echo $ip
 gcloud dns record-sets transaction remove -z create-instances-managed-zone --name $1 --ttl 60 --type A $ip
+gcloud dns record-sets transaction remove -z create-instances-managed-zone --name $1 --ttl 60 --type TXT "csye6225"
 gcloud dns record-sets transaction execute -z=create-instances-managed-zone
 gcloud deployment-manager deployments delete finalpresentation
