@@ -101,14 +101,14 @@ resources:
   properties:
     topic: password_reset
 
-- name: myclouddeploymentmanager148
+- name: myclouddeploymentmanager151
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-148
+- name: {{ env["name"] }}-instance-151
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-148
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-151
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -124,7 +124,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-148.name)
+   instance: $(ref.{{ env["name"] }}-instance-151.name)
    charset: utf8
    name: csye6225
 
@@ -138,7 +138,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-148.name)
+   instance: $(ref.{{ env["name"] }}-instance-151.name)
    project: {{ env["project"] }}
    host: "%"
 
