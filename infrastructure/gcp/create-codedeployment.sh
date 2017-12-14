@@ -11,3 +11,5 @@ echo $ip
 gcloud dns record-sets transaction add -z=create-instances-managed-zone --name=$1 --type=A --ttl=60 $ip
 gcloud dns record-sets transaction add -z=create-instances-managed-zone --name=$1 --type=TXT --ttl=60 "csye6225"
 gcloud dns record-sets transaction execute -z=create-instances-managed-zone
+gsutil mb gs://$2
+gcloud beta functions deploy helloGET --stage-bucket $2 --trigger-http

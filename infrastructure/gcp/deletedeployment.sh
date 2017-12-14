@@ -9,3 +9,5 @@ gcloud dns record-sets transaction remove -z create-instances-managed-zone --nam
 gcloud dns record-sets transaction remove -z create-instances-managed-zone --name $1 --ttl 60 --type TXT "csye6225"
 gcloud dns record-sets transaction execute -z=create-instances-managed-zone
 gcloud deployment-manager deployments delete finalpresentation
+gsutil rm -r gs://$2
+gcloud beta functions delete helloGET

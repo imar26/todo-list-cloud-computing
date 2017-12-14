@@ -33,6 +33,11 @@ resources:
             sudo apt-get update
             sudo apt-get install openjdk-8-jdk -y
             sudo apt-get install tomcat8 -y
+            sudo apt-get update
+            curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+            sudo bash install-monitoring-agent.sh
+            curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
+            sudo bash install-logging-agent.sh
             sudo service tomcat8 start
       tags:
         items: ["http-server"]
@@ -101,14 +106,14 @@ resources:
   properties:
     topic: password_reset
 
-- name: myclouddeploymentmanager151
+- name: myclouddeploymentmanager159
   type: storage.v1.bucket
 
-- name: {{ env["name"] }}-instance-151
+- name: {{ env["name"] }}-instance-159
   type: gcp-types/sqladmin-v1beta4:instances
   properties:
    backendType: SECOND_GEN
-   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-151
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-159
    databaseVersion: MYSQL_5_6
    region: us-east1
    instanceType: CLOUD_SQL_INSTANCE
@@ -124,7 +129,7 @@ resources:
 - name: rds-database
   type: gcp-types/sqladmin-v1beta4:databases
   properties:
-   instance: $(ref.{{ env["name"] }}-instance-151.name)
+   instance: $(ref.{{ env["name"] }}-instance-159.name)
    charset: utf8
    name: csye6225
 
@@ -138,7 +143,7 @@ resources:
   properties:
    name: dbuser
    password: dbpassword
-   instance: $(ref.{{ env["name"] }}-instance-151.name)
+   instance: $(ref.{{ env["name"] }}-instance-159.name)
    project: {{ env["project"] }}
    host: "%"
 
