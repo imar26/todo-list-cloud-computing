@@ -1,0 +1,159 @@
+{% set FIREWALL = env["deployment"] + "-application-fw" %}
+{% set APPLICATION_PORT = 8080 %}
+{% set HTTPS_PORT = 443 %}
+{% set LOADBALANCER_SERVICE = env["deployment"] + "-load-balancer-service" %}
+{% set REGION = properties["zone"][:properties["zone"].rfind("-")] %}
+{% set IT_NAME = env['name'] + '-it' %}
+{% set SSL_CERTIFICATE = "/projects/" + env["project"] + "/global/sslCertificates/" + properties['sslCertificate'] %}
+
+resources:
+- name: {{ IT_NAME }}
+  type: compute.v1.instanceTemplate
+  properties:
+    properties:
+      machineType: n1-standard-1
+      disks:
+      - deviceName: boot
+        boot: true
+        autoDelete: true
+        mode: READ_WRITE
+        type: PERSISTENT
+        initializeParams:
+          sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts
+      networkInterfaces:
+      - accessConfigs:
+        - name: external-nat
+          type: ONE_TO_ONE_NAT
+        network: https://www.googleapis.com/compute/v1/projects/{{ env['project'] }}/global/networks/default
+      metadata:
+        items:
+        - key: startup-script
+          value: |
+            #!/bin/bash
+            sudo apt-get update
+            sudo apt-get install openjdk-8-jdk -y
+            sudo apt-get install tomcat8 -y
+            sudo apt-get update
+            curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+            sudo bash install-monitoring-agent.sh
+            curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
+            sudo bash install-logging-agent.sh
+            sudo service tomcat8 start
+      tags:
+        items: ["http-server"]
+
+- name: {{ env["name"] }}-igm
+  type: compute.v1.instanceGroupManager
+  properties:
+    zone: {{ properties['zone'] }}
+    targetSize: {{ properties['size'] }}
+    baseInstanceName: {{ env["name"] }}-instance
+    instanceTemplate: $(ref.{{ env["name"] }}-it.selfLink)
+
+- name: {{ env["name"] }}-as
+  type: compute.v1.autoscaler
+  properties:
+    zone: {{ properties['zone'] }}
+    target: $(ref.{{ env['name'] }}-igm.selfLink)
+    autoscalingPolicy:
+      minNumReplicas: {{ properties['size'] }}
+      maxNumReplicas: {{ properties['maxSize'] }}
+
+- name: {{ env["name"] }}-hc
+  type: compute.v1.httpHealthCheck
+  properties:
+    port: {{ APPLICATION_PORT }}
+
+- name: {{ FIREWALL }}
+  type: compute.v1.firewall
+  properties:
+    allowed:
+      - IPProtocol: TCP
+        ports: [ {{ APPLICATION_PORT }}, 80, 22, 443 ]
+    sourceRanges: [ 0.0.0.0/0 ]
+    targetTags: ["http-server"]
+
+- name: {{ env["name"] }}-bes
+  type: compute.v1.backendService
+  properties:
+    port: {{ APPLICATION_PORT }}
+    portName: {{ LOADBALANCER_SERVICE }}
+    backends:
+      - name: {{ env["name"] }}-backend
+        group: $(ref.{{ env["name"] }}-igm.instanceGroup)
+    healthChecks: [ $(ref.{{ env["name"] }}-hc.selfLink) ]
+
+- name: {{ env["name"] }}-urlmap
+  type: compute.v1.urlMap
+  properties:
+    defaultService: $(ref.{{ env["name"] }}-bes.selfLink)
+
+- name: {{ env["name"] }}-targetproxy
+  type: compute.v1.targetHttpsProxy
+  properties:
+    urlMap: $(ref.{{ env["name"] }}-urlmap.selfLink)
+    sslCertificates: [ {{ SSL_CERTIFICATE }} ]
+
+- name: {{ env["name"] }}-global-forwarding-rule
+  type: compute.v1.globalForwardingRule
+  properties:
+    IPProtocol: TCP
+    portRange: {{ HTTPS_PORT }}
+    target: $(ref.{{ env["name"] }}-targetproxy.selfLink)
+
+- name: password_reset
+  type: pubsub.v1.topic
+  properties:
+    topic: password_reset
+
+- name: myclouddeploymentmanager159
+  type: storage.v1.bucket
+
+- name: {{ env["name"] }}-instance-159
+  type: gcp-types/sqladmin-v1beta4:instances
+  properties:
+   backendType: SECOND_GEN
+   connectionName: {{ env["project"] }}:us-east1-c:i{{ env["name"] }}-instance-159
+   databaseVersion: MYSQL_5_6
+   region: us-east1
+   instanceType: CLOUD_SQL_INSTANCE
+   kind: sql#instance
+   project: {{ env["project"] }}
+   settings:
+    tier: db-n1-standard-1
+    ipConfiguration:
+     authorizedNetworks:
+      - kind: sql#aclEntry
+        value: 0.0.0.0/0
+
+- name: rds-database
+  type: gcp-types/sqladmin-v1beta4:databases
+  properties:
+   instance: $(ref.{{ env["name"] }}-instance-159.name)
+   charset: utf8
+   name: csye6225
+
+- name: rds-user
+  action: gcp-types/sqladmin-v1beta4:sql.users.insert
+  metadata:
+   runtimePolicy:
+   - CREATE
+   dependsOn:
+   - rds-database
+  properties:
+   name: dbuser
+   password: dbpassword
+   instance: $(ref.{{ env["name"] }}-instance-159.name)
+   project: {{ env["project"] }}
+   host: "%"
+
+- name: {{ env["name"] }}-managed-zone
+  type: dns.v1.managedZone
+  properties:
+    dnsName: {{ properties["domain"] }}.
+    description: A-zone
+
+outputs:
+- name: instanceTemplateSelfLink
+  value: $(ref.{{ IT_NAME }}.selfLink)
+
